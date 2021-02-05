@@ -7,20 +7,22 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 const config = {
-  entry: './src/index.tsx',
+  mode: 'development',
+  entry: path.resolve(__dirname, './src/index.tsx'),
   output: {
-    path: path.resolve(__dirname, 'dist'),
-    filename: '[name].[contenthash].js'
+    path: path.resolve(__dirname, 'docs'),
+    filename: '[name].[contenthash].js',
   },
+  target: 'web', // enum
   module: {
     rules: [
       {
-        test: /\.ts(x)?$/,
+        test: /\.(ts|tsx)$/,
         loader: 'ts-loader',
         exclude: /node_modules/
       },
       {
-        test: /\.scss$/,
+        test: /\.(scss|css)$/,
         use: [
           MiniCssExtractPlugin.loader,
           'css-loader',
@@ -37,11 +39,12 @@ const config = {
     ]
   },
   devServer: {
-    port: 8080,
-    contentBase: path.join(__dirname, "dist"),
-    proxy: { // proxy URLs to backend development server
-      '/api': 'http://localhost:3000'
-    },
+    port: 9000,
+    contentBase: path.join(__dirname, 'docs'),
+    open: true,
+    // proxy: { '/api': 'http://localhost:3000' },
+    // proxy URLs to backend development server
+    contentBase: path.join(__dirname, 'public'), // boolean | string | array, static file location
     compress: true, // enable gzip compression
     historyApiFallback: true, // true for index.html upon 404, object for multiple paths
     hot: true, // hot module replacement. Depends on HotModuleReplacementPlugin
@@ -50,18 +53,27 @@ const config = {
     // ...
   },
   plugins: [
+    new CleanWebpackPlugin(),
     /*
     new CopyPlugin({
       patterns: [{ from: 'src/index.html' }],
     }),
     */
     new HtmlWebpackPlugin({
-      appMountId: 'app',
+      title: 'TTToe',
       template: './src/index.html',
-      filename: 'index.html'
+      filename: 'index.html',
+      /*
+      'meta': {
+        'viewport': 'width=device-width, initial-scale=1.0',
+        'charset': 'UTF-8'
+      }
+      */
     }),
-    new MiniCssExtractPlugin(),
-    new CleanWebpackPlugin(),
+    new webpack.ProgressPlugin({ percentBy: 'entries' }),
+    new MiniCssExtractPlugin({
+      filename: `[name].[contenthash].css`,
+    }),
     /*
     new BundleAnalyzerPlugin({
       analyzerMode: 'static',

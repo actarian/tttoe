@@ -1,13 +1,8 @@
 
 import * as React from 'react';
+import { SquareProps } from './types';
 
-export interface ISquareProps {
-  key: number;
-  value: 'X' | 'O' | null;
-  onClick: (event: any) => void;
-}
-
-export function Square(props: ISquareProps) {
+export function Square(props: SquareProps) {
   return (
     <button className="tttoe__square" onClick={props.onClick}>{props.value}</button>
   );

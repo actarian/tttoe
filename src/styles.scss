@@ -17,6 +17,17 @@ body {
 
 .tttoe__info {
   position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+
+  &>ol, &>ul {
+    list-style: none;
+    display: flex;
+    align-items: center;
+  }
 }
 
 .tttoe__board {
@@ -25,6 +36,15 @@ body {
 }
 
 .tttoe__square {
+    background: white;
+    border: 2px solid #ccc;
+    line-height: 1;
+    &,
+    &:active {
+      appearance: none;
+      border-radius: 0;
+      outline: none;
+    }
 }
 
 @media (orientation: landscape) {
@@ -35,6 +55,7 @@ body {
   .tttoe__square {
     width: 30vh;
     height: 30vh;
+    font-size: 15vh;
   }
 }
 
@@ -46,5 +67,6 @@ body {
   .tttoe__square {
     width: 30vw;
     height: 30vw;
+    font-size: 15vw;
   }
 }

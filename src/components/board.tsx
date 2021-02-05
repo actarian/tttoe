@@ -1,13 +1,9 @@
 
 import * as React from 'react';
 import { Square } from './square';
+import { BoardProps } from './types';
 
-export interface IBoardProps {
-  squares: ("X" | "O" | null)[];
-  onClick: (event: any) => void;
-}
-
-export class Board extends React.Component<IBoardProps> {
+export class Board extends React.Component<BoardProps> {
   render() {
     return (
       <div className="tttoe__board">
