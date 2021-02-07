@@ -4,6 +4,7 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const fs = require('fs');
 
 let config = {
   mode: 'development',
@@ -168,12 +169,21 @@ module.exports = (env, options) => {
   const mode = options.mode || 'development';
   console.log(`Webpack mode ${mode}`);
   config.mode = mode;
+  if (mode && fs.existsSync(path.resolve(__dirname, `./webpack.${mode}`))) {
+    return mergeConfig(config, require(`./webpack.${mode}`));
+  } else {
+    return config;
+  }
+  /*
   switch (mode) {
     case 'development':
       return mergeConfig(config, require('./webpack.development'));
     case 'production':
       return mergeConfig(config, require('./webpack.production'));
+    case 'docs':
+      return mergeConfig(config, require('./webpack.docs'));
     default:
       return config;
   }
+  */
 }

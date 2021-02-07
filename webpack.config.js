@@ -11,6 +11,7 @@ const config = {
   entry: path.resolve(__dirname, './src/index.tsx'),
   output: {
     path: path.resolve(__dirname, 'docs'),
+    publicPath: '',
     filename: '[name].[contenthash].js',
   },
   target: 'web', // enum
@@ -25,17 +26,43 @@ const config = {
         test: /\.(scss|css)$/,
         use: [
           MiniCssExtractPlugin.loader,
-          'css-loader',
-          'sass-loader'
+          // { loader: 'css-modules-typescript-loader'},  // to generate a .d.ts module next to the .scss file (also requires a declaration.d.ts with 'declare modules '*.scss';' in it to tell TypeScript that 'import styles from './styles.scss';' means to load the module './styles.scss.d.td')
+          {
+            loader: 'css-loader',
+            /*
+            options: {
+              importLoaders: 1,
+              modules: true
+            }
+            */
+          },
+          {
+            loader: 'sass-loader',
+          }
         ]
-      }
+      },
+      {
+        test: /\.(png|jpg|jpeg|gif|svg|ttf|woff|woff2)$/i,
+        use: [
+          {
+            loader: 'file-loader',
+            options: {
+              name: '[name].[contenthash].[ext]',
+              outputPath: 'assets',
+              esModule: false // <- here
+            }
+          },
+        ],
+      },
     ]
   },
   resolve: {
     extensions: [
       '.tsx',
       '.ts',
-      '.js'
+      '.js',
+      '.css',
+      '.scss',
     ]
   },
   devServer: {
@@ -54,6 +81,13 @@ const config = {
   },
   plugins: [
     new CleanWebpackPlugin(),
+    /*
+    new CopyPlugin({
+      patterns: [
+        { from: 'src/assets', to: 'docs/assets' },
+      ],
+    }),
+    */
     /*
     new CopyPlugin({
       patterns: [{ from: 'src/index.html' }],

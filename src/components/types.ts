@@ -1,26 +1,34 @@
 export type SquareValue = 'X' | 'O' | null;
 
+export type ToastProps = {
+  message: string;
+}
+
 export type SquareProps = {
-    key: number;
-    value: SquareValue;
-    onClick: (event: any) => void;
+  key: number;
+  index: number;
+  value: SquareValue;
+  victory: boolean;
+  onClick: (event: any) => void;
 }
 
 export type BoardProps = {
-    squares: SquareValue[];
-    onClick: (event: any) => void;
+  squares: SquareValue[];
+  victoryLine: number[];
+  onClick: (event: any) => void;
 }
 
 export type BoardState = {
-    squares: SquareValue[];
+  squares: SquareValue[];
 }
 
 export type GameProps = {
 }
 
 export type GameState = {
-    history: BoardState[];
-    index: number;
-    xIsNext: boolean;
-    winner: SquareValue;
+  boards: BoardState[];
+  index: number;
+  victoryLine: number[];
+  winner: SquareValue;
+  tie: boolean;
 }

@@ -1,0 +1,14 @@
+%btn-reset {
+  font-family: inherit;
+  appearance: none;
+  border-radius: 0;
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+
+button {
+  @extend %btn-reset;
+  background: inherit;
+  color: inherit;
+}
