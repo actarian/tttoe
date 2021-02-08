@@ -11,7 +11,7 @@ const config = {
   entry: path.resolve(__dirname, './src/index.tsx'),
   output: {
     path: path.resolve(__dirname, 'docs'),
-    publicPath: '',
+    publicPath: '/tttoe/',
     filename: '[name].[contenthash].js',
   },
   target: 'web', // enum

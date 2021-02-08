@@ -1,5 +1,5 @@
 import { useReducer } from "react";
-import { deepCopy } from "../observable/use.observable";
+import { deepCopy } from "../@hooks/observable/use.observable";
 import { GameState } from "../types";
 import { checkVictory } from "./game.store$";
 

@@ -1,8 +1,8 @@
 
 import * as React from 'react';
+// import { useSharedStore$ } from '../@hooks/observable/use.observable';
+import { useStore$ } from '../@hooks/observable/use.observable';
 import { Board } from '../board/board';
-// import { useSharedStore$ } from '../observable/use.observable';
-import { useStore$ } from '../observable/use.observable';
 import { Toast } from '../toast/toast';
 import { GameProps, GameState } from '../types';
 import './game.scss';

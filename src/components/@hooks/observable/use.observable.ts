@@ -66,6 +66,35 @@ export function useReducer$<T>(actions: any, defaultState?: T): (action$: Subjec
   }
 }
 
+export function useReducer_$<T>(actionsFactory: () => { [key:string]: (state:T, ...args:any[]) => Observable<T> | T }, defaultState: T, subject?: Subject<ObservableAction>): ObservableHook<T> {
+  subject = subject || new Subject<ObservableAction>();
+  const action$ = useRef(subject).current;
+  const next = useCallback((key: string, ...args: any[]) => action$.next({ key, args }), [action$]);
+  const reducerFactory = useRef(actionsFactory).current;
+  const [state, setState] = useState<T>(defaultState);
+  useEffect(() => {
+    const actions = reducerFactory();
+    const state$ = of(defaultState).pipe(
+      switchMap(state => {
+        return action$.pipe(
+          filter(action => typeof actions[action.key] === 'function'),
+          switchMap(action => {
+            const reducer = actions[action.key](deepCopy(state) as T, ...action.args);
+            const reducer$ = isObservable(reducer) ? reducer : of(reducer);
+            return reducer$.pipe(
+              tap(next => state = next),
+              // tap(next => console.log(action.key, next)),
+            );
+          }),
+        )
+      }),
+    )
+    const subscription = state$.subscribe(setState);
+    return () => subscription.unsubscribe();
+  }, [reducerFactory, action$]);
+  return [state, next];
+}
+
 export function deepCopy(source: any[] | { [key: string]: any } | number | string | boolean | null | undefined): (any[] | { [key: string]: any } | number | string | boolean | null | undefined) {
   if (Array.isArray(source)) {
     return source.map(x => deepCopy(x));

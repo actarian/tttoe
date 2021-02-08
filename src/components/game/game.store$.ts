@@ -1,5 +1,5 @@
 
-import { ObservableFactoryResult, ObservableReducer, ObservableReducers, useReducer$ } from '../observable/use.observable';
+import { ObservableFactoryResult, ObservableReducer, ObservableReducers, useReducer$ } from '../@hooks/observable/use.observable';
 import { GameState, SquareValue } from '../types';
 
 const selectSquare: ObservableReducer<GameState> = <GameState>(state: any, i: number): GameState => {
