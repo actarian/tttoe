@@ -8,15 +8,7 @@ import { useStore } from './game.store';
 
 export function Game(_: GameProps) {
 
-  const [state, dispatch] = useStore({
-    boards: [{
-      squares: new Array(9).fill(null)
-    }],
-    index: 0,
-    victoryLine: [],
-    winner: null,
-    tie: false,
-  });
+  const [state, dispatch] = useStore();
 
   const move = (state.index % 2) === 0 ? 'X' : 'O';
 

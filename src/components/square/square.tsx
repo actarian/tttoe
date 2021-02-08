@@ -3,7 +3,7 @@ import * as React from 'react';
 import { useState } from 'react';
 import { animated, useSpring } from 'react-spring';
 import { SquareProps } from '../types';
-// import { useBoop } from './boop';
+// import { useBoop } from '../@hooks/boop/boop';
 import './square.scss';
 
 export function Square(props: SquareProps) {

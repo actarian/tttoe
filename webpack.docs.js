@@ -4,7 +4,7 @@ const config = {
   mode: 'production',
   output: {
     path: path.resolve(__dirname, 'docs'),
-    publicPath: '/tests/tttoe/',
+    publicPath: '/tttoe/',
     filename: '[name].[contenthash].js',
   },
   performance: {

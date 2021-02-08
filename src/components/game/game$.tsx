@@ -1,24 +1,14 @@
 
 import * as React from 'react';
-// import { useSharedStore$ } from '../@hooks/observable/use.observable';
-import { useStore$ } from '../@hooks/observable/use.observable';
 import { Board } from '../board/board';
 import { Toast } from '../toast/toast';
-import { GameProps, GameState } from '../types';
+import { GameProps } from '../types';
 import './game.scss';
-import { gameStore$ } from './game.store$';
+import { useStore$ } from './game.store$';
 
 export function Game$(_: GameProps) { // :React.Component<GameProps>
 
-  const [state, next] = useStore$<GameState>(gameStore$, {
-    boards: [{
-      squares: new Array(9).fill(null)
-    }],
-    index: 0,
-    victoryLine: [],
-    winner: null,
-    tie: false,
-  });
+  const [state, next] = useStore$();
 
   const move = (state.index % 2) === 0 ? 'X' : 'O';
 

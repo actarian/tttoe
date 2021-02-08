@@ -1,6 +1,16 @@
 
-import { ObservableFactoryResult, ObservableReducer, ObservableReducers, useReducer$ } from '../@hooks/observable/use.observable';
+import { ObservableFactoryResult, ObservableHook, ObservableReducer, ObservableReducers, useReducer$, useReducer$__, useSharedReducer$ } from '../@hooks/observable/use.observable';
 import { GameState, SquareValue } from '../types';
+
+export const DEFAULT_STATE: GameState = {
+  boards: [{
+    squares: new Array(9).fill(null)
+  }],
+  index: 0,
+  victoryLine: [],
+  winner: null,
+  tie: false,
+}
 
 const selectSquare: ObservableReducer<GameState> = <GameState>(state: any, i: number): GameState => {
   if (state.winner != null) {
@@ -30,23 +40,31 @@ const selectMove: ObservableReducer<GameState> = <GameState>(state: any, i: numb
   return state;
 }
 
-const reducer$: ObservableReducers<GameState> = {
+export const reducer$: ObservableReducers<GameState> = {
   selectSquare,
   selectMove,
 };
 
-export function gameStore$(defaultState: GameState): ObservableFactoryResult<GameState> {
-  return useReducer$<GameState>(reducer$, defaultState);
+export function useSharedStore$(defaultState?: GameState): ObservableHook<GameState> {
+  return useSharedReducer$<GameState>(() => reducer$, defaultState || DEFAULT_STATE);
 }
 
-export function checkVictory(state: GameState): void {
+export function useStore$(defaultState?: GameState): ObservableHook<GameState> {
+  return useReducer$<GameState>(() => reducer$, defaultState || DEFAULT_STATE);
+}
+
+export function gameStore$(defaultState: GameState): ObservableFactoryResult<GameState> {
+  return useReducer$__<GameState>(reducer$, defaultState);
+}
+
+function checkVictory(state: GameState): void {
   const squares = state.boards[state.index].squares;
   state.victoryLine = getVictoryLine(squares);
   state.winner = state.victoryLine.length ? squares[state.victoryLine[0]] : null;
   state.tie = !state.winner && squares.reduce((p: boolean, c: SquareValue) => p && c != null, true);
 }
 
-export function getVictoryLine(squares: SquareValue[]): number[] {
+function getVictoryLine(squares: SquareValue[]): number[] {
   const lines = [
     [0, 1, 2],
     [3, 4, 5],

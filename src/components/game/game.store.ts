@@ -1,7 +1,16 @@
-import { useReducer } from "react";
-import { deepCopy } from "../@hooks/observable/use.observable";
-import { GameState } from "../types";
-import { checkVictory } from "./game.store$";
+import { useReducer } from 'react';
+import { deepCopy } from '../@hooks/utils/utils';
+import { GameState, SquareValue } from '../types';
+
+export const DEFAULT_STATE: GameState = {
+  boards: [{
+    squares: new Array(9).fill(null)
+  }],
+  index: 0,
+  victoryLine: [],
+  winner: null,
+  tie: false,
+}
 
 export type GameAction =
   | { type: 'selectSquare', i: number }
@@ -44,32 +53,34 @@ export function reducer(state: GameState, action: GameAction) {
   }
 }
 
-export function useStore(defaultState: GameState) {
-  return useReducer(reducer, defaultState);
+export function useStore(defaultState?: GameState) {
+  return useReducer(reducer, defaultState || DEFAULT_STATE);
 }
 
-/*
-const initialState = {count: 0};
-
-function reducer(state, action) {
-  switch (action.type) {
-    case 'increment':
-      return {count: state.count + 1};
-    case 'decrement':
-      return {count: state.count - 1};
-    default:
-      throw new Error();
-  }
+function checkVictory(state: GameState): void {
+  const squares = state.boards[state.index].squares;
+  state.victoryLine = getVictoryLine(squares);
+  state.winner = state.victoryLine.length ? squares[state.victoryLine[0]] : null;
+  state.tie = !state.winner && squares.reduce((p: boolean, c: SquareValue) => p && c != null, true);
 }
 
-function Counter() {
-  const [state, dispatch] = useReducer(reducer, initialState);
-  return (
-    <>
-      Count: {state.count}
-      <button onClick={() => dispatch({type: 'decrement'})}>-</button>
-      <button onClick={() => dispatch({type: 'increment'})}>+</button>
-    </>
-  );
+function getVictoryLine(squares: SquareValue[]): number[] {
+  const lines = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6],
+  ];
+  return lines.reduce((p: number[], line: number[]) => {
+    const [a, b, c] = line;
+    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+      return line;
+    } else {
+      return p;
+    }
+  }, []);
 }
-*/
