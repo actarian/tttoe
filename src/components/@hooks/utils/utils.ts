@@ -1,5 +1,9 @@
 
-export function deepCopy(source: any[] | { [key: string]: any } | number | string | boolean | null | undefined): (any[] | { [key: string]: any } | number | string | boolean | null | undefined) {
+export type StateValue = StateValue[] | { [key: string]: StateValue } | number | string | boolean | null | undefined;
+
+export function deepCopy<T>(source: T): T;
+// export function deepCopy(source: any): any {
+export function deepCopy(source: StateValue): StateValue {
   if (Array.isArray(source)) {
     return source.map(x => deepCopy(x));
   } else if (source && typeof source === 'object') {

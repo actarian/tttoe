@@ -1,8 +1,9 @@
 import { useReducer } from 'react';
+import { ObservableAction, ObservableHook, useReducer$, useSharedReducer$ } from '../@hooks/observable/use.observable';
 import { deepCopy } from '../@hooks/utils/utils';
-import { GameState, SquareValue } from '../types';
+import { GameAction, GameState, SquareValue } from '../types';
 
-export const DEFAULT_STATE: GameState = {
+const DEFAULT_STATE: GameState = {
   boards: [{
     squares: new Array(9).fill(null)
   }],
@@ -12,11 +13,7 @@ export const DEFAULT_STATE: GameState = {
   tie: false,
 }
 
-export type GameAction =
-  | { type: 'selectSquare', i: number }
-  | { type: 'selectMove', i: number };
-
-const selectSquare = (state: any, i: number): GameState => {
+const selectSquare = (state: GameState, i: number): GameState => {
   if (state.winner != null) {
     return state;
   }
@@ -34,27 +31,32 @@ const selectSquare = (state: any, i: number): GameState => {
   return state;
 }
 
-const selectMove = (state: any, i: number): GameState => {
+const selectMove = (state: GameState, i: number): GameState => {
   state.index = i;
   checkVictory(state);
-  // state.winner = getWinner(squares);
-  // console.log('selectMove', i, state.index, state.winner);
   return state;
 }
 
-export function reducer(state: GameState, action: GameAction) {
+function reducer(state: GameState, action: GameAction) {
   switch (action.type) {
     case 'selectSquare':
-      return selectSquare(deepCopy(state), action.i);
+      return selectSquare(deepCopy<GameState>(state), action.i);
     case 'selectMove':
-      return selectMove(deepCopy(state), action.i);
+      return selectMove(deepCopy<GameState>(state), action.i);
     default:
       throw new Error('unknown action');
   }
 }
 
-export function useStore(defaultState?: GameState) {
-  return useReducer(reducer, defaultState || DEFAULT_STATE);
+function reducer$(state: GameState, action: ObservableAction) {
+  switch (action.type) {
+    case 'selectSquare':
+      return selectSquare(state, action.i);
+    case 'selectMove':
+      return selectMove(state, action.i);
+    default:
+      throw new Error('unknown action');
+  }
 }
 
 function checkVictory(state: GameState): void {
@@ -83,4 +85,18 @@ function getVictoryLine(squares: SquareValue[]): number[] {
       return p;
     }
   }, []);
+}
+
+// --------------
+
+export function useStore(defaultState?: GameState) {
+  return useReducer(reducer, defaultState || DEFAULT_STATE);
+}
+
+export function useStore$(defaultState?: GameState): ObservableHook<GameState> {
+  return useReducer$<GameState>(reducer$, defaultState || DEFAULT_STATE);
+}
+
+export function useSharedStore$(defaultState?: GameState): ObservableHook<GameState> {
+  return useSharedReducer$<GameState>(reducer$, defaultState || DEFAULT_STATE);
 }

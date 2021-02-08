@@ -1,5 +1,6 @@
 const webpack = require('webpack');
 const path = require('path');
+const fs = require('fs');
 const CopyPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
@@ -10,8 +11,8 @@ const config = {
   mode: 'development',
   entry: path.resolve(__dirname, './src/index.tsx'),
   output: {
-    path: path.resolve(__dirname, 'docs'),
-    publicPath: '/tttoe/',
+    path: path.resolve(__dirname, 'dist'),
+    publicPath: '',
     filename: '[name].[contenthash].js',
   },
   target: 'web', // enum
@@ -67,7 +68,7 @@ const config = {
   },
   devServer: {
     port: 9000,
-    contentBase: path.join(__dirname, 'docs'),
+    contentBase: path.join(__dirname, 'dist'),
     open: true,
     // proxy: { '/api': 'http://localhost:3000' },
     // proxy URLs to backend development server
@@ -84,7 +85,7 @@ const config = {
     /*
     new CopyPlugin({
       patterns: [
-        { from: 'src/assets', to: 'docs/assets' },
+        { from: 'src/assets', to: 'dist/assets' },
       ],
     }),
     */
@@ -131,4 +132,43 @@ const config = {
   */
 };
 
-module.exports = config;
+module.exports = (env, options) => {
+  const keys = ['development', 'production', 'docs'];
+  const mode = keys.reduce((p, c) => {
+    return env[c] ? c : p;
+  }, keys[0]);
+  const configPath = `./webpack.${mode}.js`;
+  console.log(`Webpack ${mode} - ${configPath}`);
+  if (mode && fs.existsSync(path.resolve(__dirname, configPath))) {
+    return mergeConfig(config, require(configPath));
+  } else {
+    return config;
+  }
+  /*
+  switch (mode) {
+    case 'development':
+      return mergeConfig(config, require('./webpack.development'));
+    case 'production':
+      return mergeConfig(config, require('./webpack.production'));
+    case 'docs':
+      return mergeConfig(config, require('./webpack.docs'));
+    default:
+      return config;
+  }
+  */
+}
+
+function mergeConfig(target, source) {
+  if (typeof source === 'object') {
+    Object.keys(source).forEach(key => {
+      const value = source[key];
+      if (typeof value === 'object' && !Array.isArray(value)) {
+        target[key] = target[key] || {};
+        target[key] = mergeConfig(target[key], value);
+      } else {
+        target[key] = value;
+      }
+    });
+  }
+  return target;
+}

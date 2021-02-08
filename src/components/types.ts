@@ -25,6 +25,10 @@ export type BoardState = {
 export type GameProps = {
 }
 
+export type GameAction =
+  | { type: 'selectSquare', i: number }
+  | { type: 'selectMove', i: number };
+
 export type GameState = {
   boards: BoardState[];
   index: number;

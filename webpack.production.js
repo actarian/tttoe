@@ -3,8 +3,8 @@ const path = require('path');
 const config = {
   mode: 'production',
   output: {
-    path: path.resolve(__dirname, 'docs'),
-    publicPath: '/tests/tttoe/',
+    path: path.resolve(__dirname, 'build'),
+    publicPath: '/',
     filename: '[name].[contenthash].js',
   },
   performance: {

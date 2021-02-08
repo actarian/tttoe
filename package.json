@@ -7,9 +7,9 @@
   "author": "Luca Zampetti",
   "license": "MIT",
   "scripts": {
-    "start": "webpack serve --mode development",
-    "build": "webpack --mode production",
-    "docs": "webpack --mode docs"
+    "start": "webpack serve --env=development",
+    "build": "webpack --env=production",
+    "docs": "webpack --env=docs"
   },
   "dependencies": {
     "react": "^17.0.1",
