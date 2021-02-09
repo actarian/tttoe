@@ -4,4 +4,8 @@ import { Game } from './components/game/game';
 import './styles.scss';
 // console.log(document);
 const mountNode = document.getElementById('app');
-ReactDOM.render(<Game />, mountNode);
+ReactDOM.render(
+  <React.StrictMode>
+    <Game />
+  </React.StrictMode>, mountNode
+);

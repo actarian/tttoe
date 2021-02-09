@@ -12,6 +12,7 @@
     "docs": "webpack --env=docs"
   },
   "dependencies": {
+    "agora-rtm-sdk": "^1.4.1-201",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-spring": "^8.0.27",

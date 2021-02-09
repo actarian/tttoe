@@ -9,13 +9,13 @@ const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPl
 
 const config = {
   mode: 'development',
+  target: 'web', // enum
   entry: path.resolve(__dirname, './src/index.tsx'),
   output: {
     path: path.resolve(__dirname, 'dist'),
     publicPath: '',
     filename: '[name].[contenthash].js',
   },
-  target: 'web', // enum
   module: {
     rules: [
       {
@@ -68,7 +68,6 @@ const config = {
   },
   devServer: {
     port: 9000,
-    contentBase: path.join(__dirname, 'dist'),
     open: true,
     // proxy: { '/api': 'http://localhost:3000' },
     // proxy URLs to backend development server
