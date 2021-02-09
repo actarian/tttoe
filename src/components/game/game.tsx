@@ -1,16 +1,32 @@
 
+import AgoraRTM from 'agora-rtm-sdk';
 import * as React from 'react';
+// import { useSharedStore$ } from './game.service';
+import { makeid, useAgoraRtm } from '../@hooks/agora-rtm/agora-rtm';
 import { Board } from '../board/board';
 import { Toast } from '../toast/toast';
 import { GameProps } from '../types';
 import './game.scss';
 // import { useStore } from './game.service';
 import { useStore$ } from './game.service';
-// import { useSharedStore$ } from './game.service';
+
+const client = AgoraRTM.createInstance('86c20074dd75415eaa828236b52c5416');
+const channel = client.createChannel('channelId');
+const randomUseName = makeid(5);
 
 export function Game(_: GameProps) {
 
   const [state, dispatch] = useStore$();
+
+  const [rtmState, sendRtmMessage] = useAgoraRtm(randomUseName, client, channel);
+
+  console.log('rtmState', rtmState);
+
+  /*
+  if (rtmState.connected && rtmState.messages.length === 0) {
+    sendRtmMessage('hello!');
+  }
+  */
 
   const move = (state.index % 2) === 0 ? 'X' : 'O';
 
@@ -18,6 +34,7 @@ export function Game(_: GameProps) {
     if (!state.winner && state.boards[state.index].squares[i] == null) {
       dispatch({ type:'selectSquare', i });
     }
+    sendRtmMessage('hello!');
   }
 
   return (

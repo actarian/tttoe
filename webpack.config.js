@@ -20,7 +20,8 @@ const config = {
     rules: [
       {
         test: /\.(ts|tsx)$/,
-        loader: 'ts-loader',
+        enforce: 'pre',
+        use: ['ts-loader', 'source-map-loader'],
         exclude: /node_modules/
       },
       {
@@ -66,6 +67,7 @@ const config = {
       '.scss',
     ]
   },
+  devtool: false,
   devServer: {
     port: 9000,
     open: true,
@@ -103,6 +105,9 @@ const config = {
         'charset': 'UTF-8'
       }
       */
+    }),
+    new webpack.SourceMapDevToolPlugin({
+      filename: `[name].[contenthash].[ext].map`
     }),
     new webpack.ProgressPlugin({ percentBy: 'entries' }),
     new MiniCssExtractPlugin({

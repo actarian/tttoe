@@ -1,79 +1,93 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect, useRef, useState } from 'react';
-import { AttributesMap, RtmClient, RtmMessage } from './types';
+import { RtmChannel, RtmClient, RtmMessage } from 'agora-rtm-sdk';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-export type IMessage = {
-  user: AttributesMap;
-  message: string;
+export type AgoraRtmMessage = {
+  // user: AttributesMap;
+  text: string;
+  uid: string;
+  timeStamp: number;
 }
 
-const USER_ID = Math.floor(Math.random() * 1000000001);
+export type AgoraRtmState = {
+  uid: string;
+  connected: boolean;
+  messages: AgoraRtmMessage[];
+}
 
-const useAgoraRtm = (userName: string, client: RtmClient) => {
+// const USER_ID = Math.floor(Math.random() * 1000000001);
 
-  const [messages, setMessages] = useState<IMessage[]>([]);
+export function useAgoraRtm(uid: string, client: RtmClient, channel$: RtmChannel): [AgoraRtmState, (text:string) => Promise<void>] {
 
-  const channel = useRef(client.createChannel('channelId')).current;
+  const [state, setState] = useState<AgoraRtmState>({
+    uid,
+    connected: false,
+    messages: [] as AgoraRtmMessage[],
+  });
+  // const [messages, setMessages] = useState<AgoraRtmMessage[]>([]);
+  // const [currentMessage, setCurrentMessage] = useState<AgoraRtmMessage>();
 
-  const color = useRef('red').current;
+  const channel = useRef(channel$).current;
+
+  const onMessage = useCallback((data: RtmMessage, uid: string) => {
+    console.log('AgoraRtm.onMessage', data, uid);
+    if (data.messageType === 'TEXT') {
+      const message = JSON.parse(data.text);
+      console.log('AgoraRtm.onMessage', message, state.messages);
+      // setState(Object.assign({}, state, { messages: state.messages.concat([message]) }));
+      setState({ ...state, messages: [...state.messages, message] });
+      // const message = { user, text, uid };
+      // setCurrentMessage(message);
+    }
+  }, [state]);
+
+  channel.on('ChannelMessage', onMessage);
 
   const initRtm = async () => {
     await client.login({
-      uid: USER_ID.toString(),
+      uid,
     });
     await channel.join();
+    /*
     await client.setLocalUserAttributes({
-      name: userName,
+      uid,
       color,
     });
+    const user = await client.getUserAttributes(uid);
+    */
   };
 
   useEffect(() => {
     initRtm();
-    // eslint-disable-next-line consistent-return
+    setState({ ...state, connected: true });
+    return () => {
+      channel.off('ChannelMessage', onMessage);
+    };
   }, []);
 
-  useEffect(() => {
-    channel.on('ChannelMessage', (data, uid) => {
-      handleMessageReceived(data, uid);
+  const sendMessage = async (text: string) => {
+    const message = { uid, text, timeStamp: Date.now() };
+    channel.sendMessage({ text: JSON.stringify(message) }).then(() => {
+      console.log('AgoraRtm.sendMessage.sent', text);
+      // const message = { user: { uid: 'Current User (Me)', color }, text, uid };
+      // setCurrentMessage(message);
+      // setState({ ...state, messages: [...state.messages, message] });
+    }).catch((error) => {
+      console.log('AgoraRtm.sendMessage', error);
     });
-  }, []);
-
-  const handleMessageReceived = async (data: RtmMessage, uid: string) => {
-    const user = await client.getUserAttributes(uid);
-    console.log(data);
-    if (data.messageType === 'TEXT') {
-      const newMessageData = { user, message: data.text };
-      setCurrentMessage(newMessageData);
-    }
   };
 
-  const [currentMessage, setCurrentMessage] = useState<IMessage>();
-
-  const sendChannelMessage = async (text: string) => {
-    channel
-      .sendMessage({ text })
-      .then(() => {
-        setCurrentMessage({
-          user: { name: 'Current User (Me)', color },
-          message: text,
-        });
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
+  /*
   useEffect(() => {
     if (currentMessage) {
-      setMessages([...messages, currentMessage]);
+      setState({ ...state, messages: [...state.messages, currentMessage] });
+      // setMessages([...messages, currentMessage]);
     }
   }, [currentMessage]);
+  */
 
-  return { sendChannelMessage, messages };
+  return [state, sendMessage];
 };
-
-export default useAgoraRtm;
 
 export function makeid(length: number) {
   let result = '';
@@ -102,7 +116,7 @@ const client = AgoraRTM.createInstance('YOUR-API-KEY');
 const randomUseName = makeid(5);
 function App() {
   const [textArea, setTextArea] = useState('');
-  const { messages, sendChannelMessage } = useAgoraRtm(
+  const { messages, sendMessage } = useAgoraRtm(
     randomUseName,
     client as RtmClient
   );
@@ -110,7 +124,7 @@ function App() {
     if (e.charCode === 13) {
       e.preventDefault();
       if (textArea.trim().length === 0) return;
-      sendChannelMessage(e.currentTarget.value);
+      sendMessage(e.currentTarget.value);
       setTextArea('');
     }
   };
