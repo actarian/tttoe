@@ -81,8 +81,36 @@ const config = {
     noInfo: true, // only errors & warns on hot reload
     // ...
   },
-  plugins: [
+  /*
+  optimization: {
+    runtimeChunk: 'single',
+    splitChunks: {
+      cacheGroups: {
+        vendor: {
+          test: /[\\/]node_modules[\\/]/,
+          name: 'vendors',
+          chunks: 'all'
+        }
+      }
+    }
+  }
+  */
+};
+
+function setPlugins(config) {
+  let environment = {};
+  if (config.environment) {
+    environment = config.environment;
+    /*
+    Object.keys(config.environment).forEach(key => {
+      environment[key] = config.environment[key];
+    });
+    */
+    delete config.environment;
+  }
+  config.plugins = [
     new CleanWebpackPlugin(),
+    new webpack.EnvironmentPlugin(environment),
     /*
     new CopyPlugin({
       patterns: [
@@ -119,22 +147,9 @@ const config = {
       openAnalyzer: false,
     })
     */
-  ],
-  /*
-  optimization: {
-    runtimeChunk: 'single',
-    splitChunks: {
-      cacheGroups: {
-        vendor: {
-          test: /[\\/]node_modules[\\/]/,
-          name: 'vendors',
-          chunks: 'all'
-        }
-      }
-    }
-  }
-  */
-};
+  ];
+  return config;
+}
 
 module.exports = (env, options) => {
   const keys = ['development', 'production', 'docs'];
@@ -143,11 +158,12 @@ module.exports = (env, options) => {
   }, keys[0]);
   const configPath = `./webpack.${mode}.js`;
   console.log(`Webpack ${mode} - ${configPath}`);
+  let currentConfig;
   if (mode && fs.existsSync(path.resolve(__dirname, configPath))) {
-    return mergeConfig(config, require(configPath));
-  } else {
-    return config;
+    currentConfig = mergeConfig(config, require(configPath));
   }
+  currentConfig = setPlugins(config);
+  return currentConfig;
   /*
   switch (mode) {
     case 'development':

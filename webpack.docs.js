@@ -1,6 +1,10 @@
 const path = require('path');
 
 const config = {
+  environment: {
+    APP_ID: '86c20074dd75415eaa828236b52c5416',
+    CHANNEL_ID: 'channelId',
+  },
   mode: 'production',
   output: {
     path: path.resolve(__dirname, 'docs'),

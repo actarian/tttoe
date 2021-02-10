@@ -1,5 +1,5 @@
 import { useReducer } from 'react';
-import { ObservableAction, ObservableHook, useReducer$, useSharedReducer$ } from '../@hooks/observable/use.observable';
+import { ObservableAction, ObservableHook, useReducer$, useSharedReducer$ } from '../@hooks/observable/observable';
 import { deepCopy } from '../@hooks/utils/utils';
 import { GameAction, GameState, SquareValue } from '../types';
 
@@ -37,12 +37,12 @@ const selectMove = (state: GameState, i: number): GameState => {
   return state;
 }
 
-function reducer(state: GameState, action: GameAction) {
+function reducer(prevState: GameState, action: GameAction) {
   switch (action.type) {
     case 'selectSquare':
-      return selectSquare(deepCopy<GameState>(state), action.i);
+      return selectSquare(deepCopy<GameState>(prevState), action.i);
     case 'selectMove':
-      return selectMove(deepCopy<GameState>(state), action.i);
+      return selectMove(deepCopy<GameState>(prevState), action.i);
     default:
       throw new Error('unknown action');
   }

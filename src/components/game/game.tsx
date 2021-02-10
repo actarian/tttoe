@@ -2,7 +2,7 @@
 import AgoraRTM from 'agora-rtm-sdk';
 import * as React from 'react';
 // import { useSharedStore$ } from './game.service';
-import { makeid, useAgoraRtm } from '../@hooks/agora-rtm/agora-rtm';
+import { makeRandonUid, useAgoraRtm } from '../@hooks/agora-rtm/agora-rtm';
 import { Board } from '../board/board';
 import { Toast } from '../toast/toast';
 import { GameProps } from '../types';
@@ -10,21 +10,20 @@ import './game.scss';
 // import { useStore } from './game.service';
 import { useStore$ } from './game.service';
 
-const client = AgoraRTM.createInstance('86c20074dd75415eaa828236b52c5416');
-const channel = client.createChannel('channelId');
-const randomUseName = makeid(5);
+const client = AgoraRTM.createInstance(process.env.APP_ID as string);
+const channel = client.createChannel(process.env.CHANNEL_ID as string);
+const uid = makeRandonUid();
 
 export function Game(_: GameProps) {
 
   const [state, dispatch] = useStore$();
+  const [stateRtm, dispatchRtm] = useAgoraRtm(uid, client, channel);
 
-  const [rtmState, sendRtmMessage] = useAgoraRtm(randomUseName, client, channel);
-
-  console.log('rtmState', rtmState);
+  console.log('Game.render', stateRtm.messages.map(x => `${x.timeStamp} ${x.text}`).join('\n'));
 
   /*
-  if (rtmState.connected && rtmState.messages.length === 0) {
-    sendRtmMessage('hello!');
+  if (stateRtm.connected && stateRtm.messages.length === 0) {
+    dispatchRtm({ type:'sendMessage', message: 'hello!' });
   }
   */
 
@@ -34,7 +33,9 @@ export function Game(_: GameProps) {
     if (!state.winner && state.boards[state.index].squares[i] == null) {
       dispatch({ type:'selectSquare', i });
     }
-    sendRtmMessage('hello!');
+    if (stateRtm.connected) {
+      dispatchRtm({ type:'sendMessage', message: 'hello!' });
+    }
   }
 
   return (

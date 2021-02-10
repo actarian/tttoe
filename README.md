@@ -1,31 +1,29 @@
 # tttoe
 
-Empty project.
+React Tic Tac Toe case study.
 
-## Building and running on localhost
+## Building and running on localhost  
 
-First install dependencies:
+Install dependencies:
 
 ```sh
 npm install
 ```
 
-To create a production build:
+Run in development with hot reload:
 
 ```sh
-npm run build-prod
+npm run start
 ```
 
-To create a development build:
+Create a production build:
 
 ```sh
-npm run build-dev
+npm run build
 ```
 
-## Running
+Create a production build for docs folder:
 
-Open the file `dist/index.html` in your browser
-
-## Credits
-
-Made with [createapp.dev](https://createapp.dev/)
+```sh
+npm run docs
+```
