@@ -1,8 +1,8 @@
-
 import AgoraRTM from 'agora-rtm-sdk';
 import * as React from 'react';
 // import { useSharedStore$ } from './game.service';
 import { makeRandonUid, useAgoraRtm } from '../@hooks/agora-rtm/agora-rtm';
+import { Actions, Status } from '../@hooks/agora-rtm/types';
 import { Board } from '../board/board';
 import { Toast } from '../toast/toast';
 import { GameProps } from '../types';
@@ -23,7 +23,7 @@ export function Game(_: GameProps) {
 
   /*
   if (stateRtm.connected && stateRtm.messages.length === 0) {
-    dispatchRtm({ type:'sendMessage', message: 'hello!' });
+    dispatchRtm({ type: Actions.SendMessage, message: 'hello!' });
   }
   */
 
@@ -31,10 +31,13 @@ export function Game(_: GameProps) {
 
   const onSelectSquare = (i: number) => {
     if (!state.winner && state.boards[state.index].squares[i] == null) {
-      dispatch({ type:'selectSquare', i });
+      dispatch({ type: 'selectSquare', i });
     }
-    if (stateRtm.connected) {
-      dispatchRtm({ type:'sendMessage', message: 'hello!' });
+  }
+
+  const onSearchMatch = () => {
+    if (stateRtm.status === Status.Connected) {
+      dispatchRtm({ type: Actions.SendMessage, message: 'waiting' });
     }
   }
 
@@ -44,12 +47,12 @@ export function Game(_: GameProps) {
       <ul className="tttoe__nav">
         {state.boards.map((_, i) => (
           <li key={i}>
-            <button className={state.index === i ? 'active' : void 0} onClick={() => dispatch({ type:'selectMove', i })}>
+            <button className={state.index === i ? 'active' : void 0} onClick={() => dispatch({ type: 'selectMove', i })}>
               {i == 0 ? (
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M13.5 2c-5.621 0-10.211 4.443-10.475 10h-3.025l5 6.625 5-6.625h-2.975c.257-3.351 3.06-6 6.475-6 3.584 0 6.5 2.916 6.5 6.5s-2.916 6.5-6.5 6.5c-1.863 0-3.542-.793-4.728-2.053l-2.427 3.216c1.877 1.754 4.389 2.837 7.155 2.837 5.79 0 10.5-4.71 10.5-10.5s-4.71-10.5-10.5-10.5z" /></svg>
               ) : (
-                `${i}`
-              )}
+                  `${i}`
+                )}
             </button>
           </li>
         ))}
@@ -61,6 +64,7 @@ export function Game(_: GameProps) {
       {state.tie && (
         <Toast message={`tie!`} />
       )}
+      <button onClick={onSearchMatch}>Search Match</button>
     </div>
   );
 }

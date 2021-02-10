@@ -2,74 +2,54 @@
 import { RtmChannel, RtmClient, RtmMessage } from 'agora-rtm-sdk';
 import { useEffect, useReducer, useRef } from 'react';
 import { deepCopy } from '../utils/utils';
+import { Action, Actions, Message, State, Status } from './types';
 
-export type AgoraRtmMessage = {
-  // user: AttributesMap;
-  text: string;
-  uid: string;
-  timeStamp: number;
-}
+export function useAgoraRtm(uid: string, client: RtmClient, channel$: RtmChannel): [State, React.Dispatch<Action>] {
 
-export type AgoraRtmState = {
-  uid: string;
-  connecting: boolean;
-  connected: boolean;
-  messages: AgoraRtmMessage[];
-}
-
-// const USER_ID = Math.floor(Math.random() * 1000000001);
-
-export type AgoraRtmAction =
-  | { type: 'connect' }
-  | { type: 'setConnected', value: boolean }
-  | { type: 'sendMessage', message: string }
-  | { type: 'onMessage', message: AgoraRtmMessage };
-
-export function useAgoraRtm(uid: string, client: RtmClient, channel$: RtmChannel): [AgoraRtmState, React.Dispatch<AgoraRtmAction>] {
-
-  function makeMessage(text:string):AgoraRtmMessage {
-    return { uid, text, timeStamp: Date.now() };
+  function makeMessage(message: { text: string, remoteId?: string, senderId?: string }):Message {
+    return { timeStamp: Date.now(), uid, ...message };
   }
 
   const channel = useRef(channel$).current;
 
-  const sendMessage = async (text: string) => {
-    console.log('AgoraRtm.sendMessage');
-    const message = makeMessage(text);
+  const sendMessage = async (message: { text: string, remoteId?: string, senderId?: string }) => {
+    // console.log('AgoraRtm.sendMessage');
+    message = makeMessage(message);
     return channel.sendMessage({ text: JSON.stringify(message) });
   };
 
-  const [state, dispatch] = useReducer<(prevState: AgoraRtmState, action: AgoraRtmAction) => AgoraRtmState>(reducer, {
-    uid,
-    connecting: false,
-    connected: false,
-    messages: [],
+  const [state, dispatch] = useReducer<(prevState: State, action: Action) => State>(reducer, {
+    uid, status: Status.Idle, messages: [], opponent: null,
   });
-  // const [messages, setMessages] = useState<AgoraRtmMessage[]>([]);
-  // const [currentMessage, setCurrentMessage] = useState<AgoraRtmMessage>();
 
-  function reducer(prevState: AgoraRtmState, action: AgoraRtmAction) {
-    console.log('AgoraRtm.reducer', action.type);
+  // const [messages, setMessages] = useState<Message[]>([]);
+  // const [currentMessage, setCurrentMessage] = useState<Message>();
+
+  function reducer(prevState: State, action: Action) {
+    // console.log('AgoraRtm.reducer', action.type);
     let state;
     switch (action.type) {
-      case 'connect':
-        if (prevState.connecting) {
-          return prevState;
-        } else {
-          state = deepCopy<AgoraRtmState>(prevState);
-          state.connecting = true;
+
+      case Actions.Connect:
+        if (prevState.status === Status.Idle) {
+          state = deepCopy<State>(prevState);
+          state.status = Status.Connecting;
           return state;
+        } else {
+          return prevState;
         }
-      case 'setConnected':
-        state = deepCopy<AgoraRtmState>(prevState);
-        state.connected = action.value;
+
+      case Actions.SetStatus:
+        state = deepCopy<State>(prevState);
+        state.status = action.status;
         return state;
-      case 'sendMessage':
-        if (prevState.connected) {
-          sendMessage(action.message).then(() => {
+
+      case Actions.SendMessage:
+        if (prevState.status === Status.Connected) {
+          sendMessage({ text: action.message }).then(() => {
             console.log('AgoraRtm.sendMessage.sent', action.message);
-            const message = makeMessage(action.message);
-            dispatch({ type: 'onMessage', message });
+            // const message = makeMessage({ text: action.message });
+            // dispatch({ type: Actions.OnMessage, message });
             //
             // setCurrentMessage(message);
             // setState({ ...state, messages: [...state.messages, message] });
@@ -78,23 +58,73 @@ export function useAgoraRtm(uid: string, client: RtmClient, channel$: RtmChannel
           });
         }
         return prevState;
-      case 'onMessage':
-        state = deepCopy<AgoraRtmState>(prevState);
+
+      case Actions.FindMatch:
+        if (prevState.status === Status.Connected) {
+          state = deepCopy<State>(prevState);
+          state.status = Status.Waiting;
+          sendMessage({ text: 'Waiting' }).catch((error) => {
+            console.log('AgoraRtm.sendMessage', error);
+          });
+          return state;
+        }
+        return prevState;
+
+      case Actions.OnMessage:
+        const message = action.message;
+        switch(message.text) {
+          case 'Waiting':
+            if (prevState.status === Status.Waiting) {
+              state = deepCopy<State>(prevState);
+              state.opponent = message.uid;
+              state.status = Status.Playing;
+            } else {
+              return prevState;
+            }
+          break;
+          case 'Accept':
+            if (prevState.status === Status.Waiting) {
+              state = deepCopy<State>(prevState);
+              state.opponent = message.uid;
+              state.status = Status.Playing;
+            } else {
+              return prevState;
+            }
+          break;
+          default:
+            state = deepCopy<State>(prevState);
+            state.messages.push(message);
+        }
+        return state;
+
+      case Actions.OnResponse:
+        state = deepCopy<State>(prevState);
         state.messages.push(action.message);
         return state;
+
       default:
         throw new Error('unknown action');
     }
   }
 
-  const onMessage = (data: RtmMessage, uid: string) => {
+  const onMessage = (data: RtmMessage, senderUid: string) => {
     // console.log('AgoraRtm.onMessage', data, uid);
-    if (data.messageType === 'TEXT') {
-      const message: AgoraRtmMessage = JSON.parse(data.text) as AgoraRtmMessage;
-      console.log('AgoraRtm.onMessage', message, state.messages);
+    if (senderUid !== uid && data.messageType === 'TEXT') {
+      const message: Message = JSON.parse(data.text) as Message;
+      /*
+      if (message.messageId && has(`message-${message.messageId}`)) {
+        dispatch({ type: Actions.OnResponse, message });
+				// channel.emit(`message-${message.messageId}`, message);
+			}
+      */
+      if (!message.remoteId || message.remoteId === uid) {
+        dispatch({ type: Actions.OnMessage, message });
+      } else if (message.senderId === uid) {
+        dispatch({ type: Actions.OnResponse, message });
+      }
+      // console.log('AgoraRtm.onMessage', message, state.messages);
       // setState(Object.assign({}, state, { messages: state.messages.concat([message]) }));
       // setState({ ...state, messages: [...state.messages, message] });
-      dispatch({ type: 'onMessage', message });
       // const message = { user, text, uid };
       // setCurrentMessage(message);
     }
@@ -112,6 +142,7 @@ export function useAgoraRtm(uid: string, client: RtmClient, channel$: RtmChannel
         uid,
       });
       await channel.join();
+      channel.on('ChannelMessage', onMessageListener);
       /*
       await client.setLocalUserAttributes({
         uid,
@@ -121,21 +152,18 @@ export function useAgoraRtm(uid: string, client: RtmClient, channel$: RtmChannel
       */
     };
     connect();
-    channel.on('ChannelMessage', onMessageListener);
-    console.log('connect', channel.listenerCount('ChannelMessage'));
-    dispatch({ type: 'setConnected', value: true });
+    // console.log('connect', channel.listenerCount('ChannelMessage'));
+    dispatch({ type: Actions.SetStatus, status: Status.Connected });
     // setState({ ...state, connected: true });
     // unmount
     return () => {
       channel.off('ChannelMessage', onMessageListener);
-      /*
       async function disconnect() {
         await channel.leave();
         await client.logout();
       };
       disconnect();
-      */
-      console.log('disconnect');
+      // console.log('disconnect');
     };
   }, []);
 
@@ -171,7 +199,6 @@ import React, { useState } from 'react';
 import './App.css';
 import useAgoraRtm from './hooks/useAgoraRtm';
 import AgoraRTM from 'agora-rtm-sdk';
-import { RtmClient } from './types/AgoraRTMTypes';
 
 const client = AgoraRTM.createInstance('YOUR-API-KEY');
 const randomUseName = makeRandonUid();
