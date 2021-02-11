@@ -16,49 +16,63 @@ const uid = makeRandonUid();
 
 export function Game(_: GameProps) {
 
-  const [state, dispatch] = useStore$();
-  const [stateRtm, dispatchRtm] = useAgoraRtm(uid, client, channel);
+  const [gameState, dispatchGame] = useStore$();
+  const [rtmState, dispatchRtm] = useAgoraRtm(uid, client, channel);
 
-  console.log('Game.render', stateRtm.status, stateRtm.opponent, stateRtm.messages.map(x => `${x.timeStamp} ${x.text}`).join('\n'));
+  console.log('Game.render', rtmState.status, rtmState.opponent, rtmState.messages.map(x => `${x.timeStamp} ${x.text}`).join('\n'));
+
+  const state = rtmState.status === Status.Playing ? rtmState : gameState;
+  const dispatch = rtmState.status === Status.Playing ? dispatchRtm : dispatchGame;
 
   /*
-  if (stateRtm.connected && stateRtm.messages.length === 0) {
+  if (rtmState.connected && rtmState.messages.length === 0) {
     dispatchRtm({ type: Actions.SendMessage, message: 'hello!' });
   }
   */
 
   const move = (state.index % 2) === 0 ? 'X' : 'O';
+  const canMove = rtmState.status === Status.Playing ? rtmState.sign === move : true;
 
   const onSelectSquare = (i: number) => {
-    if (!state.winner && state.boards[state.index].squares[i] == null) {
-      dispatch({ type: 'selectSquare', i });
+    if (canMove && !state.winner && state.boards[state.index].squares[i] == null) {
+      dispatch({ type: Actions.SelectSquare, i });
     }
   }
 
-  const onToggleMatch = () => {
-    if (stateRtm.status === Status.Connected) {
+  const onFindMatch = () => {
+    if (rtmState.status === Status.Connected ||
+      (rtmState.status === Status.Playing && rtmState.winner)) {
       dispatchRtm({ type: Actions.FindMatch });
     }
   }
 
   const getRtmCta = (): string => {
-    switch (stateRtm.status) {
+    switch (rtmState.status) {
       case Status.Waiting:
         return 'Waiting Buddy';
       case Status.Playing:
-        return stateRtm.opponent as string;
+        if (rtmState.winner) {
+          return 'Play Again';
+        } else if (canMove) {
+          return 'Your Turn';
+        } else {
+          return rtmState.opponent as string;
+        }
       default:
         return 'Invite Buddy';
     }
   }
 
+  const hasMenu = rtmState.status !== Status.Playing;
+
   return (
     <div className="tttoe__game">
       <Board squares={state.boards[state.index].squares} victoryLine={state.victoryLine} onClick={i => onSelectSquare(i)} />
-      <ul className="tttoe__nav">
+      {hasMenu && (
+        <ul className="tttoe__nav">
         {state.boards.map((_, i) => (
           <li key={i}>
-            <button className={state.index === i ? 'active' : void 0} onClick={() => dispatch({ type: 'selectMove', i })}>
+            <button className={state.index === i ? 'active' : void 0} onClick={() => dispatch({ type: Actions.SelectMove, i })}>
               {i == 0 ? (
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M13.5 2c-5.621 0-10.211 4.443-10.475 10h-3.025l5 6.625 5-6.625h-2.975c.257-3.351 3.06-6 6.475-6 3.584 0 6.5 2.916 6.5 6.5s-2.916 6.5-6.5 6.5c-1.863 0-3.542-.793-4.728-2.053l-2.427 3.216c1.877 1.754 4.389 2.837 7.155 2.837 5.79 0 10.5-4.71 10.5-10.5s-4.71-10.5-10.5-10.5z" /></svg>
               ) : (
@@ -69,13 +83,14 @@ export function Game(_: GameProps) {
         ))}
         <li>{move}</li>
       </ul>
+      )}
       {state.winner && (
         <Toast message={`${state.winner} wins!`} />
       )}
       {state.tie && (
         <Toast message={`tie!`} />
       )}
-      <button className="tttoe__invite" onClick={onToggleMatch}>{getRtmCta()}</button>
+      <button className="tttoe__invite" onClick={onFindMatch}>{getRtmCta()}</button>
     </div>
   );
 }

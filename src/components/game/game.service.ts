@@ -3,7 +3,7 @@ import { ObservableAction, ObservableHook, useReducer$, useSharedReducer$ } from
 import { deepCopy } from '../@hooks/utils/utils';
 import { GameAction, GameState, SquareValue } from '../types';
 
-const DEFAULT_STATE: GameState = {
+export const DEFAULT_STATE: GameState = {
   boards: [{
     squares: new Array(9).fill(null)
   }],
@@ -13,7 +13,7 @@ const DEFAULT_STATE: GameState = {
   tie: false,
 }
 
-const selectSquare = (state: GameState, i: number): GameState => {
+export const selectSquare = (state: GameState, i: number): GameState => {
   if (state.winner != null) {
     return state;
   }
@@ -31,7 +31,7 @@ const selectSquare = (state: GameState, i: number): GameState => {
   return state;
 }
 
-const selectMove = (state: GameState, i: number): GameState => {
+export const selectMove = (state: GameState, i: number): GameState => {
   state.index = i;
   checkVictory(state);
   return state;

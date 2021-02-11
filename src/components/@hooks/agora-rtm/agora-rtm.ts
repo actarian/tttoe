@@ -1,24 +1,25 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { RtmChannel, RtmClient, RtmMessage } from 'agora-rtm-sdk';
 import { useEffect, useReducer, useRef } from 'react';
+import { selectMove, selectSquare } from '../../game/game.service';
 import { deepCopy } from '../utils/utils';
 import { Action, Actions, Message, State, Status } from './types';
 
 export function useAgoraRtm(uid: string, client: RtmClient, channel$: RtmChannel): [State, React.Dispatch<Action>] {
 
-  function makeMessage(message: { text: string, remoteId?: string, senderId?: string }): Message {
+  function makeMessage(message: { text: string, remoteId?: string, senderId?: string, i?: number }): Message {
     return { timeStamp: Date.now(), uid, ...message };
   }
 
   const channel = useRef(channel$).current;
 
-  const sendMessage = async (message: { text: string, remoteId?: string, senderId?: string }) => {
+  const sendMessage = async (message: { text: string, remoteId?: string, senderId?: string, i?: number }) => {
     // console.log('AgoraRtm.sendMessage');
     message = makeMessage(message);
     return channel.sendMessage({ text: JSON.stringify(message) });
   };
 
-  const sendMessageToPeer = async (message: { text: string, remoteId?: string, senderId?: string }, remoteId: string) => {
+  const sendMessageToPeer = async (message: { text: string, remoteId?: string, senderId?: string, i?: number }, remoteId: string) => {
     message = makeMessage(message);
     return client.sendMessageToPeer({ text: JSON.stringify(message) }, remoteId);
   }
@@ -28,6 +29,14 @@ export function useAgoraRtm(uid: string, client: RtmClient, channel$: RtmChannel
 
   const [state, dispatch] = useReducer<(prevState: State, action: Action) => State>(reducer, {
     uid, status: Status.Idle, messages: [], opponent: null,
+    sign: null,
+    boards: [{
+      squares: new Array(9).fill(null)
+    }],
+    index: 0,
+    victoryLine: [],
+    winner: null,
+    tie: false,
   });
 
   // const [messages, setMessages] = useState<Message[]>([]);
@@ -68,8 +77,18 @@ export function useAgoraRtm(uid: string, client: RtmClient, channel$: RtmChannel
         return prevState;
 
       case Actions.FindMatch:
-        if (prevState.status === Status.Connected) {
+        if (prevState.status === Status.Connected ||
+          (prevState.status === Status.Playing && prevState.winner)) {
           state = deepCopy<State>(prevState);
+          state.opponent = null;
+          state.sign = null;
+          // reset
+          state.boards = [{ squares: new Array(9).fill(null) }];
+          state.index = 0;
+          state.victoryLine = [];
+          state.winner = null;
+          state.tie = false;
+          // reset
           state.status = Status.Waiting;
           sendMessage({ text: 'Waiting' }).catch((error) => {
             console.log('AgoraRtm.sendMessage', error);
@@ -96,6 +115,7 @@ export function useAgoraRtm(uid: string, client: RtmClient, channel$: RtmChannel
             if (prevState.status === Status.Waiting) {
               state = deepCopy<State>(prevState);
               state.opponent = message.uid;
+              state.sign = 'X';
               state.status = Status.Playing;
               sendMessage({ text: 'Confirm' }).catch((error) => {
                 console.log('AgoraRtm.sendMessage', error);
@@ -107,10 +127,14 @@ export function useAgoraRtm(uid: string, client: RtmClient, channel$: RtmChannel
           case 'Confirm':
             if (prevState.status === Status.Waiting && prevState.opponent === message.uid) {
               state = deepCopy<State>(prevState);
+              state.sign = 'O';
               state.status = Status.Playing;
             } else {
               return prevState;
             }
+            break;
+          case 'SelectSquare':
+            state = selectSquare(deepCopy<State>(prevState), message.i as number) as State;
             break;
           default:
             state = deepCopy<State>(prevState);
@@ -127,6 +151,17 @@ export function useAgoraRtm(uid: string, client: RtmClient, channel$: RtmChannel
       case Actions.OnResponse:
         state = deepCopy<State>(prevState);
         state.messages.push(action.message);
+        return state;
+
+      case Actions.SelectSquare:
+        state = selectSquare(deepCopy<State>(prevState), action.i) as State;
+        sendMessage({ text: 'SelectSquare', i: action.i }).catch((error) => {
+          console.log('AgoraRtm.sendMessage', error);
+        });
+        return state;
+
+      case Actions.SelectMove:
+        state = selectMove(deepCopy<State>(prevState), action.i) as State;
         return state;
 
       default:
@@ -159,10 +194,10 @@ export function useAgoraRtm(uid: string, client: RtmClient, channel$: RtmChannel
   const onMessageRef = useRef(onMessage);
   useEffect(() => { onMessageRef.current = onMessage; });
 
-
   const onMemberLeft = (memberId: string) => {
+    // console.log('onMemberLeft', memberId, state.opponent);
     if (memberId === state.opponent) {
-      dispatch({ type: Actions.OnResponse, message });
+      dispatch({ type: Actions.OnOpponentDidLeave });
     }
   };
   const onMemberLeftRef = useRef(onMemberLeft);

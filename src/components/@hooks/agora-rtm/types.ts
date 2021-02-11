@@ -1,3 +1,5 @@
+import { BoardState, SquareValue } from "../../types";
+
 export enum Status {
   Idle = 'Idle',
   Connecting = 'Connecting',
@@ -14,6 +16,8 @@ export enum Actions {
   SendMessage = 'SendMessage',
   OnMessage = 'OnMessage',
   OnResponse = 'OnResponse',
+  SelectSquare = 'selectSquare',
+  SelectMove = 'selectMove',
 }
 
 export type Message = {
@@ -23,6 +27,7 @@ export type Message = {
   text: string;
   remoteId?: string;
   senderId?: string;
+  i?: number;
 }
 
 export type State = {
@@ -30,6 +35,13 @@ export type State = {
   status: Status;
   messages: Message[];
   opponent: string | null;
+  //
+  boards: BoardState[];
+  index: number;
+  victoryLine: number[];
+  winner: SquareValue;
+  tie: boolean;
+  sign: SquareValue;
 }
 
 export type Action =
@@ -39,4 +51,6 @@ export type Action =
   | { type: Actions.SetStatus, status: Status }
   | { type: Actions.SendMessage, message: string }
   | { type: Actions.OnMessage, message: Message }
-  | { type: Actions.OnResponse, message: Message };
+  | { type: Actions.OnResponse, message: Message }
+  | { type: Actions.SelectMove, i: number }
+  | { type: Actions.SelectSquare, i: number };
