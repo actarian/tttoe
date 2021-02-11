@@ -19,7 +19,7 @@ export function Game(_: GameProps) {
   const [state, dispatch] = useStore$();
   const [stateRtm, dispatchRtm] = useAgoraRtm(uid, client, channel);
 
-  console.log('Game.render', stateRtm.messages.map(x => `${x.timeStamp} ${x.text}`).join('\n'));
+  console.log('Game.render', stateRtm.status, stateRtm.opponent, stateRtm.messages.map(x => `${x.timeStamp} ${x.text}`).join('\n'));
 
   /*
   if (stateRtm.connected && stateRtm.messages.length === 0) {
@@ -35,9 +35,20 @@ export function Game(_: GameProps) {
     }
   }
 
-  const onSearchMatch = () => {
+  const onToggleMatch = () => {
     if (stateRtm.status === Status.Connected) {
-      dispatchRtm({ type: Actions.SendMessage, message: 'waiting' });
+      dispatchRtm({ type: Actions.FindMatch });
+    }
+  }
+
+  const getRtmCta = (): string => {
+    switch (stateRtm.status) {
+      case Status.Waiting:
+        return 'Waiting Buddy';
+      case Status.Playing:
+        return stateRtm.opponent as string;
+      default:
+        return 'Invite Buddy';
     }
   }
 
@@ -64,7 +75,7 @@ export function Game(_: GameProps) {
       {state.tie && (
         <Toast message={`tie!`} />
       )}
-      <button onClick={onSearchMatch}>Search Match</button>
+      <button className="tttoe__invite" onClick={onToggleMatch}>{getRtmCta()}</button>
     </div>
   );
 }

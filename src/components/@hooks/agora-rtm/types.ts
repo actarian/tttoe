@@ -8,11 +8,12 @@ export enum Status {
 
 export enum Actions {
   Connect = 'Connect',
+  FindMatch = 'FindMatch',
+  OnOpponentDidLeave = 'OnOpponentDidLeave',
   SetStatus = 'SetStatus',
   SendMessage = 'SendMessage',
   OnMessage = 'OnMessage',
   OnResponse = 'OnResponse',
-  FindMatch = 'FindMatch',
 }
 
 export type Message = {
@@ -33,8 +34,9 @@ export type State = {
 
 export type Action =
   | { type: Actions.Connect }
+  | { type: Actions.FindMatch }
+  | { type: Actions.OnOpponentDidLeave }
   | { type: Actions.SetStatus, status: Status }
   | { type: Actions.SendMessage, message: string }
   | { type: Actions.OnMessage, message: Message }
-  | { type: Actions.OnResponse, message: Message }
-  | { type: Actions.FindMatch, message: Message };
+  | { type: Actions.OnResponse, message: Message };

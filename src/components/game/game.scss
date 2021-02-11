@@ -103,3 +103,19 @@
   color: #6f76a2;
   text-shadow: 0 20px 20px rgba(0,0,0,0.2);
 }
+
+.tttoe__invite {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  bottom: 30px;
+  right: 30px;
+  padding: 7px 17px;
+  border-radius: 10px;
+  box-shadow: 0 20px 20px -10px rgba(0,0,0,0.3);
+  border-bottom: 5px solid yellow;
+  font-size: 22px;
+  background: white;
+  color: black;
+}

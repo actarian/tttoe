@@ -6,7 +6,7 @@ import { Action, Actions, Message, State, Status } from './types';
 
 export function useAgoraRtm(uid: string, client: RtmClient, channel$: RtmChannel): [State, React.Dispatch<Action>] {
 
-  function makeMessage(message: { text: string, remoteId?: string, senderId?: string }):Message {
+  function makeMessage(message: { text: string, remoteId?: string, senderId?: string }): Message {
     return { timeStamp: Date.now(), uid, ...message };
   }
 
@@ -17,6 +17,14 @@ export function useAgoraRtm(uid: string, client: RtmClient, channel$: RtmChannel
     message = makeMessage(message);
     return channel.sendMessage({ text: JSON.stringify(message) });
   };
+
+  const sendMessageToPeer = async (message: { text: string, remoteId?: string, senderId?: string }, remoteId: string) => {
+    message = makeMessage(message);
+    return client.sendMessageToPeer({ text: JSON.stringify(message) }, remoteId);
+  }
+
+  // client.subscribePeersOnlineStatus(peerIds: string[]): Promise<void>
+  // client.unsubscribePeersOnlineStatus(peerIds: string[]): Promise<void>
 
   const [state, dispatch] = useReducer<(prevState: State, action: Action) => State>(reducer, {
     uid, status: Status.Idle, messages: [], opponent: null,
@@ -72,29 +80,48 @@ export function useAgoraRtm(uid: string, client: RtmClient, channel$: RtmChannel
 
       case Actions.OnMessage:
         const message = action.message;
-        switch(message.text) {
+        switch (message.text) {
           case 'Waiting':
+            if (prevState.status === Status.Waiting && !prevState.opponent) {
+              state = deepCopy<State>(prevState);
+              state.opponent = message.uid;
+              sendMessage({ text: 'Accepting' }).catch((error) => {
+                console.log('AgoraRtm.sendMessage', error);
+              });
+            } else {
+              return prevState;
+            }
+            break;
+          case 'Accepting':
             if (prevState.status === Status.Waiting) {
               state = deepCopy<State>(prevState);
               state.opponent = message.uid;
               state.status = Status.Playing;
+              sendMessage({ text: 'Confirm' }).catch((error) => {
+                console.log('AgoraRtm.sendMessage', error);
+              });
             } else {
               return prevState;
             }
-          break;
-          case 'Accept':
-            if (prevState.status === Status.Waiting) {
+            break;
+          case 'Confirm':
+            if (prevState.status === Status.Waiting && prevState.opponent === message.uid) {
               state = deepCopy<State>(prevState);
-              state.opponent = message.uid;
               state.status = Status.Playing;
             } else {
               return prevState;
             }
-          break;
+            break;
           default:
             state = deepCopy<State>(prevState);
             state.messages.push(message);
         }
+        return state;
+
+      case Actions.OnOpponentDidLeave:
+        state = deepCopy<State>(prevState);
+        state.opponent = null;
+        state.status = Status.Connected;
         return state;
 
       case Actions.OnResponse:
@@ -114,8 +141,8 @@ export function useAgoraRtm(uid: string, client: RtmClient, channel$: RtmChannel
       /*
       if (message.messageId && has(`message-${message.messageId}`)) {
         dispatch({ type: Actions.OnResponse, message });
-				// channel.emit(`message-${message.messageId}`, message);
-			}
+        // channel.emit(`message-${message.messageId}`, message);
+      }
       */
       if (!message.remoteId || message.remoteId === uid) {
         dispatch({ type: Actions.OnMessage, message });
@@ -132,10 +159,22 @@ export function useAgoraRtm(uid: string, client: RtmClient, channel$: RtmChannel
   const onMessageRef = useRef(onMessage);
   useEffect(() => { onMessageRef.current = onMessage; });
 
+
+  const onMemberLeft = (memberId: string) => {
+    if (memberId === state.opponent) {
+      dispatch({ type: Actions.OnResponse, message });
+    }
+  };
+  const onMemberLeftRef = useRef(onMemberLeft);
+  useEffect(() => { onMemberLeftRef.current = onMemberLeft; });
+
   useEffect(() => {
     const onMessageListener = (data: RtmMessage, uid: string) => {
       onMessageRef.current(data, uid);
     };
+    const onMemberLeftListener = (memberId: string) => {
+      onMemberLeftRef.current(memberId);
+    }
     // mount
     async function connect() {
       await client.login({
@@ -143,6 +182,7 @@ export function useAgoraRtm(uid: string, client: RtmClient, channel$: RtmChannel
       });
       await channel.join();
       channel.on('ChannelMessage', onMessageListener);
+      channel.on('MemberLeft', onMemberLeftListener);
       /*
       await client.setLocalUserAttributes({
         uid,
