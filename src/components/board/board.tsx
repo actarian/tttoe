@@ -47,11 +47,13 @@ export function Board(props: BoardProps) {
     },
   });
   */
+
   if (!squares) {
     setTimeout(() => {
       setSquares(true);
     }, 250);
   }
+
   return (
     <animated.div className="tttoe__board"
       onMouseMove={({ clientX: x, clientY: y }) => set({ xys: calc(x, y) })}

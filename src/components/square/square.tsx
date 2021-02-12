@@ -1,6 +1,6 @@
 
 import * as React from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { animated, useSpring } from 'react-spring';
 import { SquareProps } from '../types';
 // import { useBoop } from '../@hooks/boop/boop';
@@ -10,6 +10,7 @@ export function Square(props: SquareProps) {
   // const style = useSpring({ from: { opacity: 0 }, to: { opacity: 1 }, config: { delay: 100 * props.index }});
   const [rotation, setRotation] = useState(180);
   // const [clicked, setClicked] = useState(false);
+
   const style = useSpring({
     from: {
       opacity: 0,
@@ -29,6 +30,13 @@ export function Square(props: SquareProps) {
     },
     */
   });
+
+  useEffect(() => {
+    if (props.value) {
+      setRotation(rotation - 180);
+    }
+  }, [props.value]);
+
   /*
   const [style, setStyle] = useSpring(() => ({
     opacity: 0,
@@ -61,18 +69,9 @@ export function Square(props: SquareProps) {
   }, [clicked]);
   */
 
-  const onClick = (e: any) => {
-    // setClicked(true);
-    if (!props.value) {
-      setRotation(rotation - 180);
-    }
-    props.onClick(e);
-  }
-
   // const [boopStyle, boopTrigger] = useBoop({ x: 10, y: 10 });
-
   return (
-    <animated.button style={style} className={`tttoe__square${props.victory ? ' victory' : ''}`} onClick={onClick}>
+    <animated.button style={style} className={`tttoe__square${props.victory ? ' victory' : ''}`} onClick={(event) => props.onClick(event)}>
       <span>{props.value}</span>
     </animated.button>
   );
