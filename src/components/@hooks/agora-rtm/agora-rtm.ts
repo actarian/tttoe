@@ -1,11 +1,15 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { RtmChannel, RtmClient, RtmMessage } from 'agora-rtm-sdk';
+import AgoraRTM, { RtmChannel, RtmClient, RtmMessage } from 'agora-rtm-sdk';
 import { useEffect, useReducer, useRef } from 'react';
 import { selectMove, selectSquare } from '../../game/game.service';
+import { Action, Actions, Message, State, Status } from '../../types';
 import { deepCopy } from '../utils/utils';
-import { Action, Actions, Message, State, Status } from './types';
 
-export function useAgoraRtm(uid: string, client: RtmClient, channel$: RtmChannel): [State, React.Dispatch<Action>] {
+const CLIENT = AgoraRTM.createInstance(process.env.APP_ID as string);
+const CHANNEL = CLIENT.createChannel(process.env.CHANNEL_ID as string);
+const UID = makeRandonUid();
+
+export function useAgoraRtm(uid: string = UID, client: RtmClient = CLIENT, channel$: RtmChannel = CHANNEL): [State, React.Dispatch<Action>] {
 
   function makeMessage(message: { text: string, remoteId?: string, senderId?: string, i?: number }): Message {
     return { timeStamp: Date.now(), uid, ...message };
@@ -26,21 +30,6 @@ export function useAgoraRtm(uid: string, client: RtmClient, channel$: RtmChannel
 
   // client.subscribePeersOnlineStatus(peerIds: string[]): Promise<void>
   // client.unsubscribePeersOnlineStatus(peerIds: string[]): Promise<void>
-
-  const [state, dispatch] = useReducer<(prevState: State, action: Action) => State>(reducer, {
-    uid, status: Status.Idle, messages: [], opponent: null,
-    sign: null,
-    boards: [{
-      squares: new Array(9).fill(null)
-    }],
-    index: 0,
-    victoryLine: [],
-    winner: null,
-    tie: false,
-  });
-
-  // const [messages, setMessages] = useState<Message[]>([]);
-  // const [currentMessage, setCurrentMessage] = useState<Message>();
 
   function reducer(prevState: State, action: Action) {
     // console.log('AgoraRtm.reducer', action.type);
@@ -63,15 +52,8 @@ export function useAgoraRtm(uid: string, client: RtmClient, channel$: RtmChannel
 
       case Actions.SendMessage:
         if (prevState.status === Status.Connected) {
-          sendMessage({ text: action.message }).then(() => {
-            console.log('AgoraRtm.sendMessage.sent', action.message);
-            // const message = makeMessage({ text: action.message });
-            // dispatch({ type: Actions.OnMessage, message });
-            //
-            // setCurrentMessage(message);
-            // setState({ ...state, messages: [...state.messages, message] });
-          }).catch((error) => {
-            console.log('AgoraRtm.sendMessage', error);
+          sendMessage({ text: action.message }).catch((error) => {
+            console.log('AgoraRtm.sendMessage', action.type, error);
           });
         }
         return prevState;
@@ -91,11 +73,33 @@ export function useAgoraRtm(uid: string, client: RtmClient, channel$: RtmChannel
           // reset
           state.status = Status.Waiting;
           sendMessage({ text: 'Waiting' }).catch((error) => {
-            console.log('AgoraRtm.sendMessage', error);
+            console.log('AgoraRtm.sendMessage', action.type, error);
           });
           return state;
         }
         return prevState;
+
+      case Actions.OnOpponentDidLeave:
+        state = deepCopy<State>(prevState);
+        state.opponent = null;
+        state.status = Status.Connected;
+        return state;
+
+      case Actions.OnResponse:
+        state = deepCopy<State>(prevState);
+        state.messages.push(action.message);
+        return state;
+
+      case Actions.SelectSquare:
+        state = selectSquare(deepCopy<State>(prevState), action.i) as State;
+        sendMessage({ text: 'SelectSquare', i: action.i }).catch((error) => {
+          console.log('AgoraRtm.sendMessage', action.type, error);
+        });
+        return state;
+
+      case Actions.SelectMove:
+        state = selectMove(deepCopy<State>(prevState), action.i) as State;
+        return state;
 
       case Actions.OnMessage:
         const message = action.message;
@@ -105,7 +109,7 @@ export function useAgoraRtm(uid: string, client: RtmClient, channel$: RtmChannel
               state = deepCopy<State>(prevState);
               state.opponent = message.uid;
               sendMessage({ text: 'Accepting' }).catch((error) => {
-                console.log('AgoraRtm.sendMessage', error);
+                console.log('AgoraRtm.sendMessage', action.type, error);
               });
             } else {
               return prevState;
@@ -118,7 +122,7 @@ export function useAgoraRtm(uid: string, client: RtmClient, channel$: RtmChannel
               state.sign = 'X';
               state.status = Status.Playing;
               sendMessage({ text: 'Confirm' }).catch((error) => {
-                console.log('AgoraRtm.sendMessage', error);
+                console.log('AgoraRtm.sendMessage', action.type, error);
               });
             } else {
               return prevState;
@@ -142,53 +146,32 @@ export function useAgoraRtm(uid: string, client: RtmClient, channel$: RtmChannel
         }
         return state;
 
-      case Actions.OnOpponentDidLeave:
-        state = deepCopy<State>(prevState);
-        state.opponent = null;
-        state.status = Status.Connected;
-        return state;
-
-      case Actions.OnResponse:
-        state = deepCopy<State>(prevState);
-        state.messages.push(action.message);
-        return state;
-
-      case Actions.SelectSquare:
-        state = selectSquare(deepCopy<State>(prevState), action.i) as State;
-        sendMessage({ text: 'SelectSquare', i: action.i }).catch((error) => {
-          console.log('AgoraRtm.sendMessage', error);
-        });
-        return state;
-
-      case Actions.SelectMove:
-        state = selectMove(deepCopy<State>(prevState), action.i) as State;
-        return state;
-
       default:
         throw new Error('unknown action');
     }
   }
 
+  const [state, dispatch] = useReducer<(prevState: State, action: Action) => State>(reducer, {
+    uid, status: Status.Idle, messages: [], opponent: null,
+    sign: null,
+    boards: [{
+      squares: new Array(9).fill(null)
+    }],
+    index: 0,
+    victoryLine: [],
+    winner: null,
+    tie: false,
+  });
+
   const onMessage = (data: RtmMessage, senderUid: string) => {
     // console.log('AgoraRtm.onMessage', data, uid);
     if (senderUid !== uid && data.messageType === 'TEXT') {
       const message: Message = JSON.parse(data.text) as Message;
-      /*
-      if (message.messageId && has(`message-${message.messageId}`)) {
-        dispatch({ type: Actions.OnResponse, message });
-        // channel.emit(`message-${message.messageId}`, message);
-      }
-      */
       if (!message.remoteId || message.remoteId === uid) {
         dispatch({ type: Actions.OnMessage, message });
       } else if (message.senderId === uid) {
         dispatch({ type: Actions.OnResponse, message });
       }
-      // console.log('AgoraRtm.onMessage', message, state.messages);
-      // setState(Object.assign({}, state, { messages: state.messages.concat([message]) }));
-      // setState({ ...state, messages: [...state.messages, message] });
-      // const message = { user, text, uid };
-      // setCurrentMessage(message);
     }
   };
   const onMessageRef = useRef(onMessage);
@@ -229,7 +212,7 @@ export function useAgoraRtm(uid: string, client: RtmClient, channel$: RtmChannel
     connect();
     // console.log('connect', channel.listenerCount('ChannelMessage'));
     dispatch({ type: Actions.SetStatus, status: Status.Connected });
-    // setState({ ...state, connected: true });
+
     // unmount
     return () => {
       channel.off('ChannelMessage', onMessageListener);
@@ -241,15 +224,6 @@ export function useAgoraRtm(uid: string, client: RtmClient, channel$: RtmChannel
       // console.log('disconnect');
     };
   }, []);
-
-  /*
-  useEffect(() => {
-    if (currentMessage) {
-      setState({ ...state, messages: [...state.messages, currentMessage] });
-      // setMessages([...messages, currentMessage]);
-    }
-  }, [currentMessage]);
-  */
 
   return [state, dispatch];
 };
@@ -263,267 +237,3 @@ export function makeRandonUid(length: number = 16) {
   }
   return result;
 }
-
-// usage
-// tttoe
-// 86c20074dd75415eaa828236b52c5416
-/*
-
-import React, { useState } from 'react';
-
-import './App.css';
-import useAgoraRtm from './hooks/useAgoraRtm';
-import AgoraRTM from 'agora-rtm-sdk';
-
-const client = AgoraRTM.createInstance('YOUR-API-KEY');
-const randomUseName = makeRandonUid();
-function App() {
-  const [textArea, setTextArea] = useState('');
-  const { messages, sendMessage } = useAgoraRtm(
-    randomUseName,
-    client as RtmClient
-  );
-  const submitMessage = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.charCode === 13) {
-      e.preventDefault();
-      if (textArea.trim().length === 0) return;
-      sendMessage(e.currentTarget.value);
-      setTextArea('');
-    }
-  };
-  return (
-    <div className="App">
-      <div className="d-flex flex-column py-5 px-3">
-        {messages.map((data, index) => {
-          return (
-            <div className="row" key={`chat${index + 1}`}>
-              <h5 className="font-size-15" style={{ color: data.user.color }}>
-                {`${data.user.name} :`}
-              </h5>
-              <p className="text-break">{` ${data.message}`}</p>
-            </div>
-          );
-        })}
-      </div>
-      <div>
-        <textarea
-          placeholder="Type your message here"
-          className="form-control"
-          onChange={(e) => setTextArea(e.target.value)}
-          aria-label="With textarea"
-          value={textArea}
-          onKeyPress={submitMessage}
-        />
-      </div>
-    </div>
-  );
-}
-
-export default App;
-
-*/
-
-
-
-/*
-import { from, interval, of } from 'rxjs';
-import { distinctUntilChanged, map, switchMap } from 'rxjs/operators';
-
-export default class RtmService {
-
-  static singleton_:RtmService;
-
-  static getSingleton() {
-    if (!this.singleton_) {
-      this.singleton_ = new RtmService();
-    }
-    return this.singleton_;
-  }
-
-  constructor() {
-    if (RtmService.singleton_) {
-      throw ('RtmService is a singleton');
-    }
-    this.onMessage = this.onMessage.bind(this);
-  }
-
-  createClient(next) {
-    const messageClient = this.messageClient = AgoraRTM.createInstance(environment.appKey, { logFilter: AgoraRTM.LOG_FILTER_OFF }); // LOG_FILTER_DEBUG
-    messageClient.setParameters({ logFilter: AgoraRTM.LOG_FILTER_OFF });
-  }
-
-  join(token, uid:string = 'aaaaa', channelName: string = 'mychannel') {
-
-    // console.log('AgoraService.connect$', preferences, devices);
-    if (!this.connecting) {
-      this.connecting = true;
-
-    }
-    // this.rtmToken$(uid).subscribe(token => {
-      // console.log('AgoraService.rtmToken$', token);
-      let channel;
-      return new Promise((resolve, reject) => {
-        const messageClient = this.messageClient;
-        messageClient.login({ token: token.token, uid: uid }).then(() => {
-          // console.log('AgoraService.messageClient.login.success');
-          channel = messageClient.createChannel(channelName);
-          return channel.join();
-        }).then(() => {
-          channel.on('ChannelMessage', this.onMessage);
-          this.channel = channel;
-          // console.log('AgoraService.joinMessageChannel.success');
-          resolve(uid);
-        }).catch(reject);
-      });
-      // then(()=>{
-      // this.observeMemberCount();
-      // });
-    // });
-  }
-
-  leaveChannel() {
-    this.connecting = false;
-    return new Promise((resolve, reject) => {
-      this.leaveMessageChannel().then(() => {
-        return Promise.all([this.leaveClient(), this.leaveScreenClient()]);
-      }, reject);
-    });
-  }
-
-  leaveMessageChannel() {
-    return new Promise((resolve, reject) => {
-        // this.unobserveMemberCount();
-        const channel = this.channel;
-        const messageClient = this.messageClient;
-        channel.leave().then(() => {
-          this.channel = null;
-          messageClient.logout().then(() => {
-            this.messageClient = null;
-            resolve();
-          }, reject);
-        }, reject)
-      } else {
-        return resolve();
-      }
-    });
-  }
-
-  membersCount$(channelId:string) {
-    const messageClient = this.messageClient;
-    return interval(2000).pipe(
-      switchMap(() => from(messageClient.getChannelMemberCount([channelId]))),
-      map((counters:any) => counters[channelId]),
-      distinctUntilChanged(),
-    );
-  }
-
-  // rtmToken$(uid) {
-  // 	if (this.useToken) {
-      // return HttpService.post$('/api/token/rtm', { uid: uid });
-    // } else {
-  // 		return of({ token: null });
-  // 	}
-  // }
-
-  newMessageId() {
-    return `${this.state.uid}-${Date.now().toString()}`;
-  }
-
-  sendRemoteControlRequest() {
-    return new Promise((resolve, reject) => {
-      this.sendMessage({
-        type: MessageType.RequestControl,
-        messageId: this.newMessageId(),
-      }).then((message) => {
-        // console.log('AgoraService.sendRemoteControlRequest.response', message);
-        if (message.type === MessageType.RequestControlAccepted) {
-          resolve(true);
-        } else if (message.type === MessageType.RequestControlRejected) {
-          // this.remoteDeviceInfo = undefined
-          resolve(false);
-        }
-      });
-    });
-  }
-
-  sendMessage(message) {
-    return new Promise((resolve, reject) => {
-      if (this.state.connected) {
-        message.clientId = this.state.uid;
-        switch (message.type) {
-          case MessageType.ControlInfo:
-            break;
-        }
-        const send = (message, channel) => {
-          try {
-            const text = JSON.stringify(message);
-            if (message.messageId) {
-              this.once(`message-${message.messageId}`, (message) => {
-                resolve(message);
-              });
-            }
-            channel.sendMessage({ text: text }).then(() => {
-              if (!message.messageId) {
-                resolve(message);
-              }
-            }).catch(error => {
-              console.log('sendMessage.error', error);
-            });
-          } catch (error) {
-            console.log('sendMessage.error', error);
-          }
-        }
-        const channel = this.channel;
-        if (channel) {
-          send(message, channel);
-        } else {
-          try {
-            this.once(`channel`, (channel) => {
-              send(message, channel);
-            });
-          } catch (error) {
-            reject(error);
-          }
-        }
-      }
-    })
-  }
-
-  checkBroadcastMessage(message) {
-    // filter for broadcast
-    // !!! filter events here
-    switch (message.type) {
-      case MessageType.RequestInfoResult:
-        this.broadcastMessage(message);
-        break;
-      default:
-        this.broadcastMessage(message);
-    }
-  }
-
-  broadcastMessage(message) {
-    // MessageService.out(message);
-  }
-
-  broadcastEvent(event) {
-    MessageService.out({
-      type: MessageType.AgoraEvent,
-      event,
-    });
-  }
-
-  onMessage(data, uid) {
-    if (uid !== this.state.uid) {
-      const message = JSON.parse(data.text);
-      if (message.messageId && this.has(`message-${message.messageId}`)) {
-        this.emit(`message-${message.messageId}`, message);
-      }
-      if (message.remoteId && message.remoteId !== this.state.uid && message.remoteId !== this.state.screenUid) {
-        return;
-      }
-      this.checkBroadcastMessage(message);
-    }
-  }
-
-}
-*/

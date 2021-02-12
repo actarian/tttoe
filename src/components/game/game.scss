@@ -49,9 +49,7 @@
       // border-radius: 8px;
       background: transparent;
       color: white;
-
       font-size: 20px;
-      font-family: 'Raleway', Arial;
 
       &.active {
         // background: white;
@@ -111,7 +109,7 @@
   align-items: center;
   bottom: 30px;
   right: 30px;
-  padding: 7px 17px;
+  padding: 7px 17px 3px 17px;
   border-radius: 10px;
   box-shadow: 0 20px 20px -10px rgba(0,0,0,0.3);
   border-bottom: 5px solid yellow;
