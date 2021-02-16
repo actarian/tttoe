@@ -4,8 +4,6 @@ import { Dispatch } from 'react';
 import { Canvas } from 'react-three-fiber';
 import { useAgoraRtm } from '../@hooks/agora-rtm/agora-rtm';
 import { Board } from '../board/board';
-import { TBoard } from '../board/tboard';
-import { TBoardGlb } from '../board/tboardglb';
 import { Nav } from '../nav/nav';
 import { Toast } from '../toast/toast';
 import { Action, Actions, GameAction, GameProps, GameState, State, Status } from '../types';
@@ -28,42 +26,11 @@ export function Game(_: GameProps) {
   // console.log('Game.render', rtmState.status, rtmState.opponent, rtmState.messages.map(x => `${x.timeStamp} ${x.text}`).join('\n'));
 
   /*
-  const onSelectSquare = (i: number) => {
-    if (canMove && !state.winner && state.boards[state.index].squares[i] == null) {
-      dispatch({ type: Actions.SelectSquare, i });
-    }
-  }
-
-  const onFindMatch = () => {
-    if (rtmState.status === Status.Connected ||
-      (rtmState.status === Status.Playing && rtmState.winner)) {
-      dispatchRtm({ type: Actions.FindMatch });
-    }
-  }
-
-  const getFindMatchLabel = (): string => {
-    switch (rtmState.status) {
-      case Status.Waiting:
-        return 'Waiting Buddy';
-      case Status.Playing:
-        if (rtmState.winner) {
-          return 'Play Again';
-        } else if (canMove) {
-          return 'Your Turn';
-        } else {
-          return rtmState.opponent as string;
-        }
-      default:
-        return 'Invite Buddy';
-    }
-  }
-
+  <Canvas className="tttoe__canvas" shadowMap={true}>
   <spotLight color={'#ffffff'} position={[10, 10, 10]} angle={0.15} penumbra={1} castShadow />
   <pointLight color={'#ffffff'} position={[10, 10, 10]} castShadow />
   <pointLight color={'#ffffff'} position={[-10, -10, 10]} castShadow />
-
   */
-
   /*
   <spotLight color={'#ffffff'} position={[-10, -10, 10]} angle={0.15}
         intensity={1.5}
@@ -77,25 +44,19 @@ export function Game(_: GameProps) {
   */
   return (
     <div className="tttoe__game">
-      <Canvas className="tttoe__canvas" shadowMap={true}>
+      <Canvas className="tttoe__canvas">
         <ambientLight intensity={0.2} />
         <directionalLight position={[2.5, 8, 5]} />
         <spotLight color={'#ffffff'} position={[-10, -10, 10]} angle={0.15} intensity={1.5} penumbra={1} />
         <spotLight color={'#ffffff'} position={[10, 10, 10]} angle={0.15} intensity={1.5} penumbra={1} />
-        {false && (
-          <TBoard squares={state.boards[state.index].squares} victoryLine={state.victoryLine} onClick={i => onSelectSquare(state, dispatch, i, canMove)} />
-        )}
         <React.Suspense fallback={null}>
           {false && (
             <Environment path={'/assets/hdri/hdri-01/'} background={false} />
           )}
-          <TBoardGlb squares={state.boards[state.index].squares} victoryLine={state.victoryLine} onClick={i => onSelectSquare(state, dispatch, i, canMove)} />
+          <Board squares={state.boards[state.index].squares} victoryLine={state.victoryLine} onClick={i => onSelectSquare(state, dispatch, i, canMove)} />
         </React.Suspense>
       </Canvas>
-      {false && (
-        <Board squares={state.boards[state.index].squares} victoryLine={state.victoryLine} onClick={i => onSelectSquare(state, dispatch, i, canMove)} />
-      )}
-      {true && hasMenu && (
+      {hasMenu && (
         <Nav boards={state.boards} index={state.index} move={move} onClick={(i) => dispatch({ type: Actions.SelectMove, i })} />
       )}
       {state.winner && (

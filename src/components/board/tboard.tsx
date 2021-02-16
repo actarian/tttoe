@@ -2,7 +2,6 @@
 import { a, useSpring } from '@react-spring/three';
 import * as React from 'react';
 import { useRef, useState } from 'react';
-import { TSquare } from '../square/tsquare';
 import { BoardProps } from '../types';
 
 const DEG = Math.PI / 180;
@@ -47,9 +46,10 @@ export function TBoard(props: BoardProps) {
     >
       <boxBufferGeometry args={[5, 5, 0.3]} />
       <meshStandardMaterial metalness={0.0} roughness={0.1} color={'#ffffff'} />
-      {squares && (props.squares.map((v, i) => <TSquare key={i} index={i} value={v} victory={props.victoryLine.indexOf(i) !== -1} onClick={props.onClick} />))}
-    </a.mesh>
+      </a.mesh>
   );
 }
+
+// {squares && (props.squares.map((v, i) => <Square key={i} index={i} value={v} victory={props.victoryLine.indexOf(i) !== -1} onClick={props.onClick} />))}
 
 // <RoundedBox args={[5, 5, 1]} radius={0.5} smoothness={4} />
