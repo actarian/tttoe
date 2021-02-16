@@ -44,7 +44,7 @@ const config = {
         ]
       },
       {
-        test: /\.(png|jpg|jpeg|gif|svg|ttf|woff|woff2)$/i,
+        test: /\.(png|jpg|jpeg|gif|svg|ttf|woff|woff2|glb|gltf)$/i,
         use: [
           {
             loader: 'file-loader',
@@ -73,7 +73,18 @@ const config = {
     open: true,
     // proxy: { '/api': 'http://localhost:3000' },
     // proxy URLs to backend development server
-    contentBase: path.join(__dirname, 'public'), // boolean | string | array, static file location
+    contentBase: [
+      path.join(__dirname, 'public'), // boolean | string | array, static file location
+      path.join(__dirname, 'assets'),
+    ],
+    // publicPath: '/assets/',
+    /*
+    staticOptions: {
+      redirect: false,
+    },
+    writeToDisk: true,
+    */
+    // contentBase: path.join(__dirname, 'public'),
     compress: true, // enable gzip compression
     historyApiFallback: true, // true for index.html upon 404, object for multiple paths
     hot: true, // hot module replacement. Depends on HotModuleReplacementPlugin
@@ -111,13 +122,11 @@ function setPlugins(config) {
   config.plugins = [
     new CleanWebpackPlugin(),
     new webpack.EnvironmentPlugin(environment),
-    /*
     new CopyPlugin({
       patterns: [
-        { from: 'src/assets', to: 'dist/assets' },
+        { from: 'assets', to: 'assets' },
       ],
     }),
-    */
     /*
     new CopyPlugin({
       patterns: [{ from: 'src/index.html' }],

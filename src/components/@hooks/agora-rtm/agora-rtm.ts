@@ -187,6 +187,7 @@ export function useAgoraRtm(uid: string = UID, client: RtmClient = CLIENT, chann
   useEffect(() => { onMemberLeftRef.current = onMemberLeft; });
 
   useEffect(() => {
+    return;
     const onMessageListener = (data: RtmMessage, uid: string) => {
       onMessageRef.current(data, uid);
     };

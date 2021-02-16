@@ -71,7 +71,7 @@ export function Square(props: SquareProps) {
 
   // const [boopStyle, boopTrigger] = useBoop({ x: 10, y: 10 });
   return (
-    <animated.button style={style} className={`tttoe__square${props.victory ? ' victory' : ''}`} onClick={(event) => props.onClick(event)}>
+    <animated.button style={style} className={`tttoe__square${props.victory ? ' victory' : ''}`}>
       <span>{props.value}</span>
     </animated.button>
   );

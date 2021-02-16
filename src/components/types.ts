@@ -1,3 +1,5 @@
+import * as THREE from 'three';
+
 // reducer
 
 export enum Status {
@@ -87,12 +89,30 @@ export type SquareProps = {
   value: SquareValue;
   victory: boolean;
   onClick: (event: any) => void;
+  square: THREE.Mesh;
+  circle: THREE.Mesh;
+  cross: THREE.Mesh;
+}
+
+export type CircleProps = {
+  circle: THREE.Mesh;
+}
+
+export type CrossProps = {
+  cross: THREE.Mesh;
 }
 
 export type BoardProps = {
   squares: SquareValue[];
   victoryLine: number[];
-  onClick: (event: any) => void;
+  onClick: (index: number) => void;
+}
+
+export type NavProps = {
+  boards: BoardState[];
+  index: number;
+  move: SquareValue;
+  onClick: (index: number) => void;
 }
 
 export type GameProps = {
