@@ -1,6 +1,5 @@
 import * as React from 'react';
-import { Dispatch, useRef, useState } from 'react';
-import { Canvas, useFrame } from 'react-three-fiber';
+import { Dispatch } from 'react';
 import { useAgoraRtm } from '../@hooks/agora-rtm/agora-rtm';
 import { Board } from '../board/board';
 import { Toast } from '../toast/toast';
@@ -58,13 +57,6 @@ export function Game(_: GameProps) {
 
   return (
     <div className="tttoe__game">
-      <Canvas className="tttoe__canvas">
-        <ambientLight intensity={0.5} />
-        <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
-        <pointLight position={[-10, -10, -10]} />
-        <Box position={[-1.2, 0, 0]} />
-        <Box position={[1.2, 0, 0]} />
-      </Canvas>
       <Board squares={state.boards[state.index].squares} victoryLine={state.victoryLine} onClick={i => onSelectSquare(state, dispatch, i, canMove)} />
       {hasMenu && (
         <ul className="tttoe__nav">
@@ -91,32 +83,6 @@ export function Game(_: GameProps) {
       <button className="tttoe__invite" onClick={() => onFindMatch(rtmState, dispatchRtm)}>{getFindMatchLabel(rtmState, canMove)}</button>
     </div>
   );
-}
-
-function Box(props: any) {
-  // This reference will give us direct access to the mesh
-  const mesh = useRef<THREE.Object3D>();
-  // Set up state for the hovered and active state
-  const [hovered, setHover] = useState(false)
-  const [active, setActive] = useState(false)
-  // Rotate mesh every frame, this is outside of React without overhead
-  useFrame(() => {
-    if (mesh && mesh.current) {
-      mesh.current.rotation.x = mesh.current.rotation.y += 0.01
-    }
-  })
-  return (
-    <mesh
-      {...props}
-      ref={mesh}
-      scale={active ? [1.5, 1.5, 1.5] : [1, 1, 1]}
-      onClick={(e) => setActive(!active)}
-      onPointerOver={(e) => setHover(true)}
-      onPointerOut={(e) => setHover(false)}>
-      <boxBufferGeometry args={[1, 1, 1]} />
-      <meshStandardMaterial color={hovered ? 'hotpink' : 'orange'} />
-    </mesh>
-  )
 }
 
 // pure
