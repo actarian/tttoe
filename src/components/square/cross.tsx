@@ -4,7 +4,7 @@ import { meshBounds, useMatcapTexture } from '@react-three/drei';
 import * as React from 'react';
 import { useMemo, useRef } from 'react';
 import { BufferGeometry } from 'three';
-import { CrossProps } from '../types';
+import { CrossProps, MATCAP_BLACK } from '../types';
 
 const DEG = Math.PI / 180;
 
@@ -22,7 +22,7 @@ export function Cross(props: CrossProps) {
 
   const mesh = useRef<THREE.Object3D>();
   const geometry = useMemo<BufferGeometry>(() => props.cross.geometry, []);
-  const [matcap] = useMatcapTexture('2A2A2A_B3B3B3_6D6D6D_848C8C');
+  const [matcap] = useMatcapTexture(MATCAP_BLACK);
 
   // <a.mesh ref={mesh} castShadow
   return (

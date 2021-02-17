@@ -4,7 +4,7 @@ import { meshBounds, useMatcapTexture } from '@react-three/drei';
 import * as React from 'react';
 import { useMemo, useRef } from 'react';
 import { BufferGeometry } from 'three';
-import { CircleProps } from '../types';
+import { CircleProps, MATCAP_BLACK } from '../types';
 
 export function Circle(props: CircleProps) {
 
@@ -20,7 +20,7 @@ export function Circle(props: CircleProps) {
 
   const mesh = useRef<THREE.Object3D>();
   const geometry = useMemo<BufferGeometry>(() => props.circle.geometry, []);
-  const [matcap] = useMatcapTexture('2A2A2A_B3B3B3_6D6D6D_848C8C');
+  const [matcap] = useMatcapTexture(MATCAP_BLACK);
 
   // <a.mesh ref={mesh} castShadow
   return (

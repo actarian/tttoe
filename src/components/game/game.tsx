@@ -1,15 +1,14 @@
-import { Environment } from '@react-three/drei';
+import { Environment, Html, Stats } from '@react-three/drei';
 import * as React from 'react';
 import { Dispatch } from 'react';
 import { Canvas } from 'react-three-fiber';
 import { useAgoraRtm } from '../@hooks/agora-rtm/agora-rtm';
 import { Board } from '../board/board';
-import { Nav } from '../nav/nav';
+import { TNav } from '../nav/tnav';
 import { Toast } from '../toast/toast';
 import { Action, Actions, GameAction, GameProps, GameState, State, Status } from '../types';
 import './game.scss';
 import { useStore } from './game.service';
-// import { useStore$ } from './game.service';
 
 export function Game(_: GameProps) {
 
@@ -45,20 +44,31 @@ export function Game(_: GameProps) {
   return (
     <div className="tttoe__game">
       <Canvas className="tttoe__canvas">
-        <ambientLight intensity={0.2} />
-        <directionalLight position={[2.5, 8, 5]} />
-        <spotLight color={'#ffffff'} position={[-10, -10, 10]} angle={0.15} intensity={1.5} penumbra={1} />
-        <spotLight color={'#ffffff'} position={[10, 10, 10]} angle={0.15} intensity={1.5} penumbra={1} />
-        <React.Suspense fallback={null}>
+        {false && (
+          <>
+            <ambientLight intensity={0.2} />
+            <directionalLight position={[2.5, 8, 5]} />
+            <spotLight color={'#ffffff'} position={[-10, -10, 10]} angle={0.15} intensity={1.5} penumbra={1} />
+            <spotLight color={'#ffffff'} position={[10, 10, 10]} angle={0.15} intensity={1.5} penumbra={1} />
+          </>
+        )}
+        <React.Suspense fallback={<Html center>loading</Html>}>
           {false && (
             <Environment path={'/assets/hdri/hdri-01/'} background={false} />
           )}
           <Board squares={state.boards[state.index].squares} victoryLine={state.victoryLine} onClick={i => onSelectSquare(state, dispatch, i, canMove)} />
+          {hasMenu && (
+          <TNav boards={state.boards} index={state.index} move={move} onClick={(i) => dispatch({ type: Actions.SelectMove, i })} ></TNav>
+          )}
         </React.Suspense>
+        {true && (
+          <Stats
+            showPanel={0} // Start-up panel (default=0)
+            className="stats" // Optional className to add to the stats container dom element
+            // {...props} // All stats.js props are valid
+          />
+        )}
       </Canvas>
-      {hasMenu && (
-        <Nav boards={state.boards} index={state.index} move={move} onClick={(i) => dispatch({ type: Actions.SelectMove, i })} />
-      )}
       {state.winner && (
         <Toast message={`${state.winner} wins!`} />
       )}
@@ -69,6 +79,12 @@ export function Game(_: GameProps) {
     </div>
   );
 }
+
+/*
+{hasMenu && (
+  <Nav boards={state.boards} index={state.index} move={move} onClick={(i) => dispatch({ type: Actions.SelectMove, i })} />
+)}
+*/
 
 /*
 <ul className="tttoe__nav">

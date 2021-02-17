@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useLayoutEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { Square } from '../square/square';
-import { BoardProps } from '../types';
+import { BoardProps, MATCAP_WHITE } from '../types';
 
 const DEG = Math.PI / 180;
 
@@ -12,18 +12,27 @@ const calc = (x: number, y: number, size: number) => ({ x: -(y - window.innerHei
 
 export function Board(props: BoardProps) {
 
-  const [squares, setSquares] = useState(false);
-  const [spring, setSpring] = useSpring<{ opacity: number, x: number, y: number, s: number }>(() => ({
+  const [spring, setSpring] = useSpring<{ x: number, y: number, s: number }>(() => ({
     from: {
-      opacity: 0,
-      x: -45, y: 0, s: getScale(),
+      x: -45, y: 0, s: calcScale(),
     },
     to: {
-      opacity: 1,
-      x: 0, y: 0, s: getScale(),
+      x: 0, y: 0, s: calcScale(),
     },
     config: { mass: 5, tension: 400, friction: 50, precision: 0.0001 },
   }) as any);
+
+  useLayoutEffect(() => {
+    function onResize() {
+      const scale = calcScale();
+      setSpring({ x: 0, y: 0, s: scale });
+    }
+    window.addEventListener('resize', onResize);
+    onResize();
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  const [squares, setSquares] = useState(false);
 
   if (!squares) {
     setTimeout(() => {
@@ -34,7 +43,7 @@ export function Board(props: BoardProps) {
   // Loads model, uses CDN draco when needed
   const { nodes, materials } = useGLTF('/assets/models/tttoe-scaled.glb', true);
   // board, square, circle, cross
-  const [matcap] = useMatcapTexture('E6E3E3_B5AFAF_CCC4C4_C4C4C4'); // ('EAEAEA_B5B5B5_CCCCCC_D4D4D4');
+  const [matcap] = useMatcapTexture(MATCAP_WHITE);
 
   const mesh = useRef<THREE.Object3D>();
 
@@ -48,8 +57,8 @@ export function Board(props: BoardProps) {
     <a.mesh ref={mesh}
       rotation-x={rotationX} rotation-y={rotationY}
       scale-x={scale} scale-y={scale} scale-z={scale}
-      onPointerMove={({ clientX: x, clientY: y }) => setSpring(calc(x, y, getScale()))}
-      onPointerOut={() => setSpring({ x: 0, y: 0, s: getScale() })}
+      onPointerMove={({ clientX: x, clientY: y }) => setSpring(calc(x, y, calcScale()))}
+      onPointerOut={() => setSpring({ x: 0, y: 0, s: calcScale() })}
       geometry={(nodes.board as THREE.Mesh).geometry}
       raycast={meshBounds}
     >
@@ -64,24 +73,11 @@ export function Board(props: BoardProps) {
 
 // <RoundedBox args={[5, 5, 1]} radius={0.5} smoothness={4} />
 
-function getScale() {
+function calcScale() {
   return Math.min(window.innerWidth, window.innerHeight) / 600;
 }
 
-function useSize() {
-  const [size, setSize] = useState(1);
-  useLayoutEffect(() => {
-    function onResize() {
-      const s = Math.min(window.innerWidth, window.innerHeight) / 600;
-      setSize(s);
-    }
-    window.addEventListener('resize', onResize);
-    onResize();
-    return () => window.removeEventListener('resize', onResize);
-  }, []);
-  return size;
-}
-
+/*
 function useWindowSize() {
   const [size, setSize] = useState([0, 0]);
   useLayoutEffect(() => {
@@ -94,3 +90,4 @@ function useWindowSize() {
   }, []);
   return size;
 }
+*/

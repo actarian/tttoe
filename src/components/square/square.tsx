@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 // import { useFrame } from 'react-three-fiber';
 import { BufferGeometry } from 'three';
-import { SquareProps } from '../types';
+import { MATCAP_WHITE, SquareProps } from '../types';
 import { Circle } from './circle';
 import { Cross } from './cross';
 
@@ -41,7 +41,7 @@ export function Square(props: SquareProps) {
 
   const mesh = useRef<THREE.Object3D>();
   const geometry = useMemo<BufferGeometry>(() => props.square.geometry, []);
-  const [matcap] = useMatcapTexture('E6E3E3_B5AFAF_CCC4C4_C4C4C4');
+  const [matcap] = useMatcapTexture(MATCAP_WHITE);
 
   const row = Math.floor(props.index / 3);
   const dy = 1 - row;

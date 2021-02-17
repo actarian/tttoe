@@ -117,3 +117,6 @@ export type NavProps = {
 
 export type GameProps = {
 }
+
+export const MATCAP_WHITE = 'C9C7BE_55514B_888279_7B6E5F'; // EAEAEA_B5B5B5_CCCCCC_D4D4D4
+export const MATCAP_BLACK = '2A2A2A_B3B3B3_6D6D6D_848C8C';

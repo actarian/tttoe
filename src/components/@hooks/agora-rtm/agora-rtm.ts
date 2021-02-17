@@ -1,9 +1,10 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import AgoraRTM, { RtmChannel, RtmClient, RtmMessage } from 'agora-rtm-sdk';
 import { useEffect, useReducer, useRef } from 'react';
 import { selectMove, selectSquare } from '../../game/game.service';
 import { Action, Actions, Message, State, Status } from '../../types';
 import { deepCopy } from '../utils/utils';
+
+const USE_AGORA = false; // !!!
 
 const CLIENT = AgoraRTM.createInstance(process.env.APP_ID as string);
 const CHANNEL = CLIENT.createChannel(process.env.CHANNEL_ID as string);
@@ -187,7 +188,9 @@ export function useAgoraRtm(uid: string = UID, client: RtmClient = CLIENT, chann
   useEffect(() => { onMemberLeftRef.current = onMemberLeft; });
 
   useEffect(() => {
-    return;
+    if (!USE_AGORA) {
+      return;
+    }
     const onMessageListener = (data: RtmMessage, uid: string) => {
       onMessageRef.current(data, uid);
     };
