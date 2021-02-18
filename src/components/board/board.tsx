@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useLayoutEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { Square } from '../square/square';
-import { BoardProps, MATCAP_WHITE } from '../types';
+import { BoardProps, MATCAP_BLACK, MATCAP_WHITE } from '../types';
 
 const DEG = Math.PI / 180;
 
@@ -43,7 +43,8 @@ export function Board(props: BoardProps) {
   // Loads model, uses CDN draco when needed
   const { nodes, materials } = useGLTF('/assets/models/tttoe-scaled.glb', true);
   // board, square, circle, cross
-  const [matcap] = useMatcapTexture(MATCAP_WHITE);
+  const white = useMatcapTexture(MATCAP_WHITE)[0];
+  const black = useMatcapTexture(MATCAP_BLACK)[0];
 
   const mesh = useRef<THREE.Object3D>();
 
@@ -62,10 +63,10 @@ export function Board(props: BoardProps) {
       geometry={(nodes.board as THREE.Mesh).geometry}
       raycast={meshBounds}
     >
-      <meshMatcapMaterial matcap={matcap} />
+      <meshMatcapMaterial matcap={white} />
       {squares && (props.squares.map((v, i) => <Square
       square={nodes.square as THREE.Mesh} circle={nodes.circle as THREE.Mesh} cross={nodes.cross as THREE.Mesh}
-      key={i} index={i} value={v} victory={props.victoryLine.indexOf(i) !== -1} onClick={props.onClick} />))}
+      key={i} index={i} white={white} black={black} value={v} victory={props.victoryLine.indexOf(i) !== -1} onClick={props.onClick} />))}
     </a.mesh>
   );
 }

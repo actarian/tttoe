@@ -1,12 +1,12 @@
 
 import { a, useSpring } from '@react-spring/three';
-import { meshBounds, useMatcapTexture } from '@react-three/drei';
+import { meshBounds } from '@react-three/drei';
 import * as React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 // import { useFrame } from 'react-three-fiber';
 import { BufferGeometry } from 'three';
-import { MATCAP_WHITE, SquareProps } from '../types';
+import { SquareProps } from '../types';
 import { Circle } from './circle';
 import { Cross } from './cross';
 
@@ -41,7 +41,6 @@ export function Square(props: SquareProps) {
 
   const mesh = useRef<THREE.Object3D>();
   const geometry = useMemo<BufferGeometry>(() => props.square.geometry, []);
-  const [matcap] = useMatcapTexture(MATCAP_WHITE);
 
   const row = Math.floor(props.index / 3);
   const dy = 1 - row;
@@ -67,12 +66,12 @@ export function Square(props: SquareProps) {
     geometry={geometry}
     raycast={meshBounds}
     >
-      <meshMatcapMaterial matcap={matcap} color={props.victory ? '#ffff00' : '#ffffff'} />
+      <meshMatcapMaterial matcap={props.white} color={props.victory ? '#ffff00' : '#ffffff'} />
       {props.value === 'X' && (
-        <Cross cross={props.cross} />
+        <Cross black={props.black} cross={props.cross} />
       )}
       {props.value === 'O' && (
-        <Circle circle={props.circle} />
+        <Circle black={props.black} circle={props.circle} />
       )}
     </a.mesh>
   );

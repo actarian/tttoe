@@ -63,7 +63,7 @@ export function TextLetter(props: NavProps & { t:number, i:number }) {
       lineHeight={1}
       letterSpacing={0.02}
       textAlign={'center'}
-      font="Nunito"
+      font="https://fonts.gstatic.com/s/raleway/v19/1Ptxg8zYS_SKggPN4iEgvnHyvveLxVtapYCM.woff"
       anchorX="center"
       anchorY="middle"
     >{props.i.toString()}</Text>

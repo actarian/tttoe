@@ -86,6 +86,8 @@ export type ToastProps = {
 export type SquareProps = {
   key: number;
   index: number;
+  white: THREE.Texture;
+  black: THREE.Texture;
   value: SquareValue;
   victory: boolean;
   onClick: (event: any) => void;
@@ -95,10 +97,12 @@ export type SquareProps = {
 }
 
 export type CircleProps = {
+  black: THREE.Texture;
   circle: THREE.Mesh;
 }
 
 export type CrossProps = {
+  black: THREE.Texture;
   cross: THREE.Mesh;
 }
 

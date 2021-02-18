@@ -1,10 +1,10 @@
 
 import { a, useSpring } from '@react-spring/three';
-import { meshBounds, useMatcapTexture } from '@react-three/drei';
+import { meshBounds } from '@react-three/drei';
 import * as React from 'react';
 import { useMemo, useRef } from 'react';
 import { BufferGeometry } from 'three';
-import { CircleProps, MATCAP_BLACK } from '../types';
+import { CircleProps } from '../types';
 
 export function Circle(props: CircleProps) {
 
@@ -20,7 +20,6 @@ export function Circle(props: CircleProps) {
 
   const mesh = useRef<THREE.Object3D>();
   const geometry = useMemo<BufferGeometry>(() => props.circle.geometry, []);
-  const [matcap] = useMatcapTexture(MATCAP_BLACK);
 
   // <a.mesh ref={mesh} castShadow
   return (
@@ -32,7 +31,7 @@ export function Circle(props: CircleProps) {
     geometry={geometry}
     raycast={meshBounds}
     >
-      <meshMatcapMaterial matcap={matcap} />
+      <meshMatcapMaterial matcap={props.black} />
     </a.mesh>
   );
   // <meshStandardMaterial metalness={0.0} roughness={0.1} color={'#111111'} />

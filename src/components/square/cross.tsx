@@ -1,10 +1,10 @@
 
 import { a, useSpring } from '@react-spring/three';
-import { meshBounds, useMatcapTexture } from '@react-three/drei';
+import { meshBounds } from '@react-three/drei';
 import * as React from 'react';
 import { useMemo, useRef } from 'react';
 import { BufferGeometry } from 'three';
-import { CrossProps, MATCAP_BLACK } from '../types';
+import { CrossProps } from '../types';
 
 const DEG = Math.PI / 180;
 
@@ -22,7 +22,6 @@ export function Cross(props: CrossProps) {
 
   const mesh = useRef<THREE.Object3D>();
   const geometry = useMemo<BufferGeometry>(() => props.cross.geometry, []);
-  const [matcap] = useMatcapTexture(MATCAP_BLACK);
 
   // <a.mesh ref={mesh} castShadow
   return (
@@ -34,7 +33,7 @@ export function Cross(props: CrossProps) {
     geometry={geometry}
     raycast={meshBounds}
     >
-      <meshMatcapMaterial matcap={matcap} />
+      <meshMatcapMaterial matcap={props.black} />
     </a.mesh>
   );
   // <meshStandardMaterial metalness={0.0} roughness={0.1} color={'#111111'} />

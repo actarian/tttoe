@@ -1,6 +1,6 @@
-import { Environment, Html, Stats } from '@react-three/drei';
+import { Environment, Html, Preload, Stats } from '@react-three/drei';
 import * as React from 'react';
-import { Dispatch } from 'react';
+import { Dispatch, useState } from 'react';
 import { Canvas } from 'react-three-fiber';
 import { WebpackWorkerFactory } from 'worker-loader!*';
 import { useAgoraRtm } from '../@hooks/agora-rtm/agora-rtm';
@@ -17,6 +17,7 @@ const MODE = process.env.MODE as string;
 
 export function Game(_: GameProps) {
 
+  const [mode, setMode] = useState(0);
   const [gameState, dispatchGame] = useStore();
   const [rtmState, dispatchRtm] = useAgoraRtm();
 
@@ -25,8 +26,9 @@ export function Game(_: GameProps) {
   const dispatch = playing ? dispatchRtm : dispatchGame;
   const move = (state.index % 2) === 0 ? 'X' : 'O';
   const canMove = playing ? rtmState.sign === move : move === 'X';
-  const singlePlayer = !playing;
-  const AIvsAI = false;
+  const playerVsAi = mode === 0; // !playing;
+  const aiVsAi = mode === 1; // false;
+  const playerVsPlayer = mode === 2; // playing;
 
   const [postMessage] = useWorker(async () => {
     const GameWorker = await import('./game.worker.ts') as WebpackWorkerFactory;
@@ -37,10 +39,10 @@ export function Game(_: GameProps) {
   });
 
   useTimeout(() => {
-    if (singlePlayer) {
+    if (playerVsAi || aiVsAi) {
       if (state.winner || state.tie) {
         dispatch({ type: Actions.SelectMove, i: 0 });
-      } else if (move !== 'X' || AIvsAI) {
+      } else if (move !== 'X' || aiVsAi) {
         postMessage({ board: state.boards[state.index].squares, player: move, opponent: (move === 'X' ? 'O' : 'X') });
         /*
         const m = GameAi.findBestMove(state.boards[state.index].squares, 'O', 'X');
@@ -49,7 +51,7 @@ export function Game(_: GameProps) {
         */
       }
     }
-  }, [singlePlayer, move]);
+  }, [playerVsAi, aiVsAi, move]);
 
   // console.log('Game.render', rtmState.status, rtmState.opponent, rtmState.messages.map(x => `${x.timeStamp} ${x.text}`).join('\n'));
 
@@ -86,9 +88,10 @@ export function Game(_: GameProps) {
             <Environment path={'/assets/hdri/hdri-01/'} background={false} />
           )}
           <Board squares={state.boards[state.index].squares} victoryLine={state.victoryLine} onClick={i => onSelectSquare(state, dispatch, i, canMove)} />
-          {singlePlayer && (
+          {playerVsAi && (
             <TNav boards={state.boards} index={state.index} move={move} onClick={(i) => dispatch({ type: Actions.SelectMove, i })} ></TNav>
           )}
+          <Preload all />
         </React.Suspense>
         {MODE === 'development' && (
           <Stats
@@ -104,13 +107,20 @@ export function Game(_: GameProps) {
       {state.tie && (
         <Toast message={`tie!`} />
       )}
-      <button className="tttoe__invite" onClick={() => onFindMatch(rtmState, dispatchRtm)}>{getFindMatchLabel(rtmState, canMove)}</button>
+      <div className="tttoe__actions">
+        <button className={'tttoe__btn' + (playerVsAi ? ' active' : '')} onClick={() => setMode(0)}>Play vs AI</button>
+        <button className={'tttoe__btn' + (aiVsAi ? ' active' : '')} onClick={() => setMode(1)}>AI vs AI</button>
+        <button className={'tttoe__btn' + (playerVsPlayer ? ' active' : '')} onClick={() => setMode(2)}>{getFindMatchLabel(rtmState, canMove)}</button>
+      </div>
     </div>
   );
 }
 
 /*
-{singlePlayer && (
+<button className={'tttoe__btn' + (playerVsPlayer ? ' active' : '')} onClick={() => onFindMatch(rtmState, dispatchRtm)}>{getFindMatchLabel(rtmState, canMove)}</button>
+
+
+{playerVsAi && (
   <Nav boards={state.boards} index={state.index} move={move} onClick={(i) => dispatch({ type: Actions.SelectMove, i })} />
 )}
 */
