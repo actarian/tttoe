@@ -1,6 +1,6 @@
 
 import { a, useSpring } from '@react-spring/three';
-import { meshBounds, useMatcapTexture } from '@react-three/drei';
+import { meshBounds, Text, useMatcapTexture } from '@react-three/drei';
 import * as React from 'react';
 import { useLayoutEffect, useMemo, useState } from 'react';
 import * as THREE from 'three';
@@ -15,13 +15,73 @@ export function TNav(props: NavProps) {
       rotation-y={Math.PI / 180 * 40}
     >
       {props.boards.map((_, i, a) => (
-        <Letter key={i} t={a.length} i={i} {...props}></Letter>
+        <TextLetter key={i} t={a.length} i={i} {...props}></TextLetter>
       ))}
     </group>
   );
 }
 
 const DEG = Math.PI / 180;
+
+export function TextLetter(props: NavProps & { t:number, i:number }) {
+
+  const [rotation, setRotation] = useState(props.index === props.i ? 360 : 0);
+
+  const calc = (x: number, y: number, size: number) => ({ x: -(y - window.innerHeight / 2) / 50 * DEG, y: (rotation -(x - window.innerWidth / 2) / 50) * DEG, s: size * 1.05 });
+
+  const [spring, setSpring] = useSpring<{ x: number, y: number, s: number }>(() => ({
+    from: {
+      x: -45 * DEG, y: 0, s: 0.5,
+    },
+    to: {
+      x: 0, y: rotation * DEG, s: 1,
+    },
+    delay: 30 * props.index,
+    config: { mass: 5, tension: 400, friction: 50, precision: 0.0001 },
+  }) as any);
+
+  useLayoutEffect(() => {
+    setRotation(props.index === props.i ? 360 : 0);
+  }, [props.index]);
+
+  const h = 0.6;
+  const s = h * 0.8;
+
+  return (
+    <a.group dispose={null}
+      position-y={props.t / 2 * h - h / 2 - h * props.i}
+      rotation-x={spring.x} rotation-y={spring.y}
+      scale-x={spring.s} scale-y={spring.s} scale-z={spring.s}
+      onPointerMove={({ clientX: x, clientY: y }) => setSpring(calc(x, y, 1.2))}
+      onPointerOut={() => setSpring({ x: 0, y: rotation * DEG, s: 1 })}
+      onClick={() => props.onClick(props.i)}
+    >
+      <Text
+      color={props.index === props.i ? 'black' : 'white'}
+      fontSize={0.5}
+      maxWidth={2}
+      lineHeight={1}
+      letterSpacing={0.02}
+      textAlign={'center'}
+      font="Nunito"
+      anchorX="center"
+      anchorY="middle"
+    >{props.i.toString()}</Text>
+    </a.group>
+  );
+}
+
+/*
+fillOpacity={0}
+strokeWidth={'2.5%'}
+strokeColor="#ffffff"
+
+outlineOffsetX={'10%'}
+outlineOffsetY={'10%'}
+outlineBlur={'30%'}
+outlineOpacity={0.3}
+outlineColor="#000000"
+*/
 
 export function Letter(props: NavProps & { t:number, i:number }) {
 

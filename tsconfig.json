@@ -5,13 +5,18 @@
     "strict": true,
     "noImplicitReturns": true,
     "noImplicitAny": true,
-    "module": "es6",
+    "module": "es2020",
     "moduleResolution": "node",
     "target": "es5",
     "allowJs": true,
     "jsx": "react",
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
+    "lib": [
+      "dom",
+      "es2015",
+      "WebWorker",
+    ],
   },
   "include": [
       "./src/**/*"

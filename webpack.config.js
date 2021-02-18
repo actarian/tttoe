@@ -44,6 +44,15 @@ const config = {
         ]
       },
       {
+        test: /\.worker\.(js|ts|tsx)$/,
+        use: {
+          loader: "worker-loader",
+          options: {
+            filename: "[name].[contenthash].worker.js",
+          },
+        },
+      },
+      {
         test: /\.(png|jpg|jpeg|gif|svg|ttf|woff|woff2|glb|gltf)$/i,
         use: [
           {

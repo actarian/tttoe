@@ -2,38 +2,54 @@ import { Environment, Html, Stats } from '@react-three/drei';
 import * as React from 'react';
 import { Dispatch } from 'react';
 import { Canvas } from 'react-three-fiber';
+import { WebpackWorkerFactory } from 'worker-loader!*';
 import { useAgoraRtm } from '../@hooks/agora-rtm/agora-rtm';
+import { useTimeout } from '../@hooks/timeout/timeout';
+import { useWorker } from '../@hooks/worker/worker';
 import { Board } from '../board/board';
 import { TNav } from '../nav/tnav';
 import { Toast } from '../toast/toast';
 import { Action, Actions, GameAction, GameProps, GameState, State, Status } from '../types';
-import { GameAi } from './game.ai';
 import './game.scss';
 import { useStore } from './game.service';
+
+const MODE = process.env.MODE as string;
 
 export function Game(_: GameProps) {
 
   const [gameState, dispatchGame] = useStore();
   const [rtmState, dispatchRtm] = useAgoraRtm();
 
-  const state = rtmState.status === Status.Playing ? rtmState : gameState;
-  const dispatch = rtmState.status === Status.Playing ? dispatchRtm : dispatchGame;
-
+  const playing = rtmState.status === Status.Playing;
+  const state = playing ? rtmState : gameState;
+  const dispatch = playing ? dispatchRtm : dispatchGame;
   const move = (state.index % 2) === 0 ? 'X' : 'O';
-  const canMove = rtmState.status === Status.Playing ? rtmState.sign === move : true;
-  const hasMenu = rtmState.status !== Status.Playing;
+  const canMove = playing ? rtmState.sign === move : move === 'X';
+  const singlePlayer = !playing;
+  const AIvsAI = false;
 
-  setTimeout(() => {
-    if (state.winner || state.tie) {
-      dispatch({ type: Actions.SelectMove, i : 0 });
-    } else if (move !== 'X') {
-      GameAi.player = move;
-      GameAi.opponent = move === 'X' ? 'O' : 'X';
-      const m = GameAi.findBestMove(state.boards[state.index].squares);
-      console.log('nextBestMove', m);
-      onSelectSquare(state, dispatch, m, true);
+  const [postMessage] = useWorker(async () => {
+    const GameWorker = await import('./game.worker.ts') as WebpackWorkerFactory;
+    return new GameWorker.default();
+  }, (event: any) => {
+    // console.log('bestMove', event.data.bestMove);
+    onSelectSquare(state, dispatch, event.data.bestMove, true);
+  });
+
+  useTimeout(() => {
+    if (singlePlayer) {
+      if (state.winner || state.tie) {
+        dispatch({ type: Actions.SelectMove, i: 0 });
+      } else if (move !== 'X' || AIvsAI) {
+        postMessage({ board: state.boards[state.index].squares, player: move, opponent: (move === 'X' ? 'O' : 'X') });
+        /*
+        const m = GameAi.findBestMove(state.boards[state.index].squares, 'O', 'X');
+        // console.log('nextBestMove', m);
+        onSelectSquare(state, dispatch, m, true);
+        */
+      }
     }
-  }, 1000);
+  }, [singlePlayer, move]);
 
   // console.log('Game.render', rtmState.status, rtmState.opponent, rtmState.messages.map(x => `${x.timeStamp} ${x.text}`).join('\n'));
 
@@ -45,14 +61,14 @@ export function Game(_: GameProps) {
   */
   /*
   <spotLight color={'#ffffff'} position={[-10, -10, 10]} angle={0.15}
-        intensity={1.5}
-        shadow-mapSize-width={1024} shadow-mapSize-height={1024}
-        shadow-camera-far={50}
-        shadow-camera-left={-10}
-        shadow-camera-right={10}
-        shadow-camera-top={10}
-        shadow-camera-bottom={-10}
-        penumbra={1} castShadow />
+    intensity={1.5}
+    shadow-mapSize-width={1024} shadow-mapSize-height={1024}
+    shadow-camera-far={50}
+    shadow-camera-left={-10}
+    shadow-camera-right={10}
+    shadow-camera-top={10}
+    shadow-camera-bottom={-10}
+    penumbra={1} castShadow />
   */
   return (
     <div className="tttoe__game">
@@ -70,15 +86,15 @@ export function Game(_: GameProps) {
             <Environment path={'/assets/hdri/hdri-01/'} background={false} />
           )}
           <Board squares={state.boards[state.index].squares} victoryLine={state.victoryLine} onClick={i => onSelectSquare(state, dispatch, i, canMove)} />
-          {hasMenu && (
-          <TNav boards={state.boards} index={state.index} move={move} onClick={(i) => dispatch({ type: Actions.SelectMove, i })} ></TNav>
+          {singlePlayer && (
+            <TNav boards={state.boards} index={state.index} move={move} onClick={(i) => dispatch({ type: Actions.SelectMove, i })} ></TNav>
           )}
         </React.Suspense>
-        {true && (
+        {MODE === 'development' && (
           <Stats
             showPanel={0} // Start-up panel (default=0)
             className="stats" // Optional className to add to the stats container dom element
-            // {...props} // All stats.js props are valid
+          // {...props} // All stats.js props are valid
           />
         )}
       </Canvas>
@@ -94,7 +110,7 @@ export function Game(_: GameProps) {
 }
 
 /*
-{hasMenu && (
+{singlePlayer && (
   <Nav boards={state.boards} index={state.index} move={move} onClick={(i) => dispatch({ type: Actions.SelectMove, i })} />
 )}
 */
@@ -120,7 +136,7 @@ export function Game(_: GameProps) {
 
 function onSelectSquare(state: GameState | State, dispatch: Dispatch<GameAction> | Dispatch<Action>, i: number, canMove: boolean) {
   if (canMove && !state.winner && state.boards[state.index].squares[i] == null) {
-    console.log('onSelectSquare', i);
+    // console.log('onSelectSquare', i);
     dispatch({ type: Actions.SelectSquare, i });
   }
 }
@@ -128,7 +144,7 @@ function onSelectSquare(state: GameState | State, dispatch: Dispatch<GameAction>
 function onFindMatch(state: State, dispatch: Dispatch<Action>): void {
   if (state.status === Status.Connected ||
     (state.status === Status.Playing && state.winner)) {
-      dispatch({ type: Actions.FindMatch });
+    dispatch({ type: Actions.FindMatch });
   }
 }
 
