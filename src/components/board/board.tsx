@@ -74,7 +74,7 @@ export function Board(props: BoardProps) {
 // <RoundedBox args={[5, 5, 1]} radius={0.5} smoothness={4} />
 
 function calcScale() {
-  return Math.min(window.innerWidth, window.innerHeight) / 600;
+  return Math.min(window.innerWidth, window.innerHeight) / 700;
 }
 
 /*

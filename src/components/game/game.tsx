@@ -7,6 +7,7 @@ import { Board } from '../board/board';
 import { TNav } from '../nav/tnav';
 import { Toast } from '../toast/toast';
 import { Action, Actions, GameAction, GameProps, GameState, State, Status } from '../types';
+import { GameAi } from './game.ai';
 import './game.scss';
 import { useStore } from './game.service';
 
@@ -21,6 +22,18 @@ export function Game(_: GameProps) {
   const move = (state.index % 2) === 0 ? 'X' : 'O';
   const canMove = rtmState.status === Status.Playing ? rtmState.sign === move : true;
   const hasMenu = rtmState.status !== Status.Playing;
+
+  setTimeout(() => {
+    if (state.winner || state.tie) {
+      dispatch({ type: Actions.SelectMove, i : 0 });
+    } else if (move !== 'X') {
+      GameAi.player = move;
+      GameAi.opponent = move === 'X' ? 'O' : 'X';
+      const m = GameAi.findBestMove(state.boards[state.index].squares);
+      console.log('nextBestMove', m);
+      onSelectSquare(state, dispatch, m, true);
+    }
+  }, 1000);
 
   // console.log('Game.render', rtmState.status, rtmState.opponent, rtmState.messages.map(x => `${x.timeStamp} ${x.text}`).join('\n'));
 
