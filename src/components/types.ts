@@ -1,18 +1,3 @@
-// reducer
-
-export type Action =
-  | { type: Actions.SelectMove, i: number }
-  | { type: Actions.SelectSquare, i: number };
-
-export enum Actions {
-  SelectSquare = 'selectSquare',
-  SelectMove = 'selectMove',
-}
-
-export type GameAction =
-  | { type: Actions.SelectSquare, i: number }
-  | { type: Actions.SelectMove, i: number };
-
 // state
 
 export type SquareValue = 'X' | 'O' | null;
