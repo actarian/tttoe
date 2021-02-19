@@ -1,9 +1,10 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import AgoraRTM, { RtmChannel, RtmClient, RtmMessage } from 'agora-rtm-sdk';
 import { useEffect, useReducer, useRef } from 'react';
 import { selectMove, selectSquare } from '../../game/game.service';
 import { Action, Actions, Message, State, Status } from '../../types';
 import { deepCopy } from '../utils/utils';
+
+const USE_AGORA = true; // !!!
 
 const CLIENT = AgoraRTM.createInstance(process.env.APP_ID as string);
 const CHANNEL = CLIENT.createChannel(process.env.CHANNEL_ID as string);
@@ -79,6 +80,28 @@ export function useAgoraRtm(uid: string = UID, client: RtmClient = CLIENT, chann
         }
         return prevState;
 
+      case Actions.LeaveMatch:
+        if (prevState.status === Status.Waiting || prevState.status === Status.Playing) {
+          state = deepCopy<State>(prevState);
+          state.opponent = null;
+          state.sign = null;
+          // reset
+          state.boards = [{ squares: new Array(9).fill(null) }];
+          state.index = 0;
+          state.victoryLine = [];
+          state.winner = null;
+          state.tie = false;
+          // reset
+          state.status = Status.Connected;
+          if (prevState.opponent) {
+            sendMessage({ text: 'Leave' }).catch((error) => {
+              console.log('AgoraRtm.sendMessage', action.type, error);
+            });
+          }
+          return state;
+        }
+        return prevState;
+
       case Actions.OnOpponentDidLeave:
         state = deepCopy<State>(prevState);
         state.opponent = null;
@@ -103,6 +126,7 @@ export function useAgoraRtm(uid: string = UID, client: RtmClient = CLIENT, chann
 
       case Actions.OnMessage:
         const message = action.message;
+        console.log(message);
         switch (message.text) {
           case 'Waiting':
             if (prevState.status === Status.Waiting && !prevState.opponent) {
@@ -133,6 +157,16 @@ export function useAgoraRtm(uid: string = UID, client: RtmClient = CLIENT, chann
               state = deepCopy<State>(prevState);
               state.sign = 'O';
               state.status = Status.Playing;
+            } else {
+              return prevState;
+            }
+            break;
+          case 'Leave':
+            if (prevState.opponent === message.uid) {
+              state = deepCopy<State>(prevState);
+              state.opponent = null;
+              state.sign = null;
+              state.status = Status.Connected;
             } else {
               return prevState;
             }
@@ -187,6 +221,9 @@ export function useAgoraRtm(uid: string = UID, client: RtmClient = CLIENT, chann
   useEffect(() => { onMemberLeftRef.current = onMemberLeft; });
 
   useEffect(() => {
+    if (!USE_AGORA) {
+      return;
+    }
     const onMessageListener = (data: RtmMessage, uid: string) => {
       onMessageRef.current(data, uid);
     };
