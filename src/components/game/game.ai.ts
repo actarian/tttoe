@@ -89,7 +89,8 @@ export class GameAi {
       best = -MAX_SCORE;
       // Traverse all cells
       for (let i = 0; i < 9; i++) {
-        const b = board.slice();
+        const b = board;
+        // const b = board.slice();
         // Check if cell is empty
         if (b[i] === null) {
           // Make the move
@@ -98,7 +99,7 @@ export class GameAi {
           // the maximum value
           best = Math.max(best, GameAi.minimax(b, depth + 1, !isMax, player, opponent, stats));
           // Undo the move
-          // board[i] = null;
+          b[i] = null;
         }
       }
     } else {
@@ -106,7 +107,8 @@ export class GameAi {
       best = MAX_SCORE;
       // Traverse all cells
       for (let i = 0; i < 9; i++) {
-        const b = board.slice();
+        const b = board;
+        // const b = board.slice();
         // Check if cell is empty
         if (b[i] === null) {
           // Make the move
@@ -115,7 +117,7 @@ export class GameAi {
           // the minimum value
           best = Math.min(best, GameAi.minimax(b, depth + 1, !isMax, player, opponent, stats));
           // Undo the move
-          // board[i] = null;
+          b[i] = null;
         }
       }
     }
@@ -125,15 +127,14 @@ export class GameAi {
   // This will return the best possible
   // move for the player
   static findBestMove(board: SquareValue[], player:SquareValue, opponent: SquareValue): number {
-    let bestScore: number = -MAX_SCORE;
     const moves: { score: number, move: number }[] = [];
-    let move: number = -1;
     // Traverse all cells, evaluate minimax function
     // for all empty cells. And return the cell
     // with optimal value.
     const stats = { matches: 0, win: 0, loss: 0 };
     for (let i = 0; i < 9; i++) {
-      const b = board.slice();
+      const b = board;
+      // const b = board.slice();
       // Check if cell is empty
       if (!b[i]) {
         // Make the move
@@ -143,14 +144,7 @@ export class GameAi {
         const score: number = GameAi.minimax(b, 0, false, player, opponent, stats);
         moves.push({ score, move: i });
         // Undo the move
-        // b[i] = null;
-        // If the value of the current move is
-        // more than the best value, then update
-        // best/
-        if (score > bestScore) {
-          move = i;
-          bestScore = score;
-        }
+        b[i] = null;
       }
     }
     const best = moves.reduce((p, c) => {
@@ -163,21 +157,6 @@ export class GameAi {
     } else {
       return -1;
     }
-    // console.log(`best move ${move}, best score ${bestScore}`, stats);
-    return move;
   }
-
-  /*
-  // Driver code
-  public static test(): void {
-    let board: SquareValue[] = [
-      'X', 'O', 'X',
-      'O', 'O', 'X',
-      null, null, null
-    ];
-    const move: number = GameAi.findBestMove(board);
-    console.log(`The Optimal Move is ${move}`);
-  }
-  */
 
 }

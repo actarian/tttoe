@@ -19,7 +19,7 @@ export function Board(props: BoardProps) {
     to: {
       x: 0, y: 0, s: calcScale(),
     },
-    config: { mass: 5, tension: 400, friction: 50, precision: 0.0001 },
+    config: { mass: 6, tension: 400, friction: 30, precision: 0.0001 },
   }) as any);
 
   useLayoutEffect(() => {

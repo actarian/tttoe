@@ -28,7 +28,7 @@ export function Square(props: SquareProps) {
 
   const rotationSpring = useSpring({
     rotation: [0, rotation * DEG, 0],
-    config: { mass: 5, tension: 400, friction: 50, precision: 0.0001 },
+    config: { mass: 6, tension: 400, friction: 45, precision: 0.0001 },
   }) as any;
 
   useEffect(() => {
@@ -45,14 +45,6 @@ export function Square(props: SquareProps) {
   const row = Math.floor(props.index / 3);
   const dy = 1 - row;
   const dx = -1 + props.index - row * 3;
-
-  /*
-  useFrame(() => {
-    if (mesh && mesh.current) {
-      mesh.current.rotation.y += (rotation * DEG - mesh.current.rotation.y) / 10;
-    }
-  })
-  */
 
   // <a.mesh ref={mesh} castShadow receiveShadow
   return (

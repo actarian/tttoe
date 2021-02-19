@@ -1,4 +1,4 @@
-import { Environment, Html, Preload, Stats } from '@react-three/drei';
+import { Environment, Preload, Stats } from '@react-three/drei';
 import * as React from 'react';
 import { Dispatch, useState } from 'react';
 import { Canvas } from 'react-three-fiber';
@@ -7,6 +7,7 @@ import { useAgoraRtm } from '../@hooks/agora-rtm/agora-rtm';
 import { useTimeout } from '../@hooks/timeout/timeout';
 import { useWorker } from '../@hooks/worker/worker';
 import { Board } from '../board/board';
+import { Loading } from '../loading/loading';
 import { TNav } from '../nav/tnav';
 import { Toast } from '../toast/toast';
 import { Action, Actions, GameAction, GameProps, GameState, State, Status } from '../types';
@@ -31,7 +32,7 @@ export function Game(_: GameProps) {
   const playerVsPlayer = mode === 2; // playing;
 
   const [postMessage] = useWorker(async () => {
-    const GameWorker = await import('./game.worker.ts') as WebpackWorkerFactory;
+    const GameWorker = await import('./game.worker') as WebpackWorkerFactory;
     return new GameWorker.default();
   }, (event: any) => {
     // console.log('bestMove', event.data.bestMove);
@@ -72,10 +73,11 @@ export function Game(_: GameProps) {
     shadow-camera-bottom={-10}
     penumbra={1} castShadow />
   */
+  // <Html center>loading</Html>
   return (
     <div className="tttoe__game">
       <Canvas className="tttoe__canvas">
-        {false && (
+        {true && (
           <>
             <ambientLight intensity={0.2} />
             <directionalLight position={[2.5, 8, 5]} />
@@ -83,12 +85,12 @@ export function Game(_: GameProps) {
             <spotLight color={'#ffffff'} position={[10, 10, 10]} angle={0.15} intensity={1.5} penumbra={1} />
           </>
         )}
-        <React.Suspense fallback={<Html center>loading</Html>}>
+        <React.Suspense fallback={<Loading></Loading>}>
           {false && (
             <Environment path={'/assets/hdri/hdri-01/'} background={false} />
           )}
           <Board squares={state.boards[state.index].squares} victoryLine={state.victoryLine} onClick={i => onSelectSquare(state, dispatch, i, canMove)} />
-          {playerVsAi && (
+          {false && playerVsAi && (
             <TNav boards={state.boards} index={state.index} move={move} onClick={(i) => dispatch({ type: Actions.SelectMove, i })} ></TNav>
           )}
           <Preload all />
