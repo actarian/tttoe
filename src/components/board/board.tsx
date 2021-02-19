@@ -2,7 +2,6 @@ import { a, useSpring } from '@react-spring/three';
 import { meshBounds, useGLTF, useMatcapTexture } from '@react-three/drei';
 import * as React from 'react';
 import { useLayoutEffect, useRef, useState } from 'react';
-import * as THREE from 'three';
 import { Square } from '../square/square';
 import { BoardProps, MATCAP_BLACK, MATCAP_WHITE } from '../types';
 

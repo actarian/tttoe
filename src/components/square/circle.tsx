@@ -3,7 +3,6 @@ import { a, useSpring } from '@react-spring/three';
 import { meshBounds } from '@react-three/drei';
 import * as React from 'react';
 import { useMemo, useRef } from 'react';
-import { BufferGeometry } from 'three';
 import { CircleProps } from '../types';
 
 export function Circle(props: CircleProps) {
@@ -19,7 +18,7 @@ export function Circle(props: CircleProps) {
   });
 
   const mesh = useRef<THREE.Object3D>();
-  const geometry = useMemo<BufferGeometry>(() => props.circle.geometry, []);
+  const geometry = useMemo<THREE.BufferGeometry>(() => props.circle.geometry, []);
 
   // <a.mesh ref={mesh} castShadow
   return (

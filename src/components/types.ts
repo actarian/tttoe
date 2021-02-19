@@ -1,5 +1,3 @@
-import * as THREE from 'three';
-
 // reducer
 
 export enum Status {
@@ -13,6 +11,7 @@ export enum Status {
 export type Action =
   | { type: Actions.Connect }
   | { type: Actions.FindMatch }
+  | { type: Actions.LeaveMatch }
   | { type: Actions.OnOpponentDidLeave }
   | { type: Actions.SetStatus, status: Status }
   | { type: Actions.SendMessage, message: string }
@@ -24,6 +23,7 @@ export type Action =
 export enum Actions {
   Connect = 'Connect',
   FindMatch = 'FindMatch',
+  LeaveMatch = 'LeaveMatch',
   OnOpponentDidLeave = 'OnOpponentDidLeave',
   SetStatus = 'SetStatus',
   SendMessage = 'SendMessage',
@@ -117,6 +117,12 @@ export type NavProps = {
   index: number;
   move: SquareValue;
   onClick: (index: number) => void;
+}
+
+export type ButtonProps = {
+  label: string;
+  onClick: () => void;
+  active?: boolean;
 }
 
 export type GameProps = {

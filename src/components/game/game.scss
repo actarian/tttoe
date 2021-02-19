@@ -168,27 +168,3 @@
     margin: 0 5px;
   }
 }
-
-.tttoe__btn {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	bottom: 30px;
-	right: 30px;
-	padding: 7px 17px 3px 17px;
-	border-radius: 10px;
-	box-shadow: 0 20px 20px -10px rgba(0, 0, 0, 0.3);
-	border-bottom: 5px solid transparent;
-	font-size: 22px;
-	background: white;
-	color: black;
-
-  &.active {
-	  border-bottom-color: yellow;
-  }
-}
-
-.tttoe__invite {
-  @extend .tttoe__btn;
-	position: absolute;
-}

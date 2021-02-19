@@ -3,7 +3,7 @@ import { a, useSpring } from '@react-spring/three';
 import { meshBounds, Text, useMatcapTexture } from '@react-three/drei';
 import * as React from 'react';
 import { useLayoutEffect, useMemo, useState } from 'react';
-import * as THREE from 'three';
+import { FontLoader } from 'three';
 import Bangers from '../../../assets/fonts/bangers/bangers-subset.json';
 import { MATCAP_WHITE, NavProps } from '../types';
 
@@ -104,7 +104,7 @@ export function Letter(props: NavProps & { t:number, i:number }) {
     setRotation(props.index === props.i ? 360 : 0);
   }, [props.index]);
 
-  const font = useMemo(() => new THREE.FontLoader().parse(Bangers), []);
+  const font = useMemo(() => new FontLoader().parse(Bangers), []);
 
   // configure font geometry
   const letter = props.i.toString();

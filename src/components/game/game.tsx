@@ -1,4 +1,4 @@
-import { Environment, Preload, Stats } from '@react-three/drei';
+import { Preload, Stats } from '@react-three/drei';
 import * as React from 'react';
 import { Dispatch, useState } from 'react';
 import { Canvas } from 'react-three-fiber';
@@ -7,8 +7,8 @@ import { useAgoraRtm } from '../@hooks/agora-rtm/agora-rtm';
 import { useTimeout } from '../@hooks/timeout/timeout';
 import { useWorker } from '../@hooks/worker/worker';
 import { Board } from '../board/board';
+import { Button } from '../button/button';
 import { Loading } from '../loading/loading';
-import { TNav } from '../nav/tnav';
 import { Toast } from '../toast/toast';
 import { Action, Actions, GameAction, GameProps, GameState, State, Status } from '../types';
 import './game.scss';
@@ -25,11 +25,11 @@ export function Game(_: GameProps) {
   const playing = rtmState.status === Status.Playing;
   const state = playing ? rtmState : gameState;
   const dispatch = playing ? dispatchRtm : dispatchGame;
-  const move = (state.index % 2) === 0 ? 'X' : 'O';
-  const canMove = playing ? rtmState.sign === move : move === 'X';
   const playerVsAi = mode === 0; // !playing;
   const aiVsAi = mode === 1; // false;
   const playerVsPlayer = mode === 2; // playing;
+  const move = (state.index % 2) === 0 ? 'X' : 'O';
+  const canMove = aiVsAi ? false : (playing ? rtmState.sign === move : move === 'X');
 
   const [postMessage] = useWorker(async () => {
     const GameWorker = await import('./game.worker') as WebpackWorkerFactory;
@@ -86,13 +86,7 @@ export function Game(_: GameProps) {
           </>
         )}
         <React.Suspense fallback={<Loading></Loading>}>
-          {false && (
-            <Environment path={'/assets/hdri/hdri-01/'} background={false} />
-          )}
           <Board squares={state.boards[state.index].squares} victoryLine={state.victoryLine} onClick={i => onSelectSquare(state, dispatch, i, canMove)} />
-          {false && playerVsAi && (
-            <TNav boards={state.boards} index={state.index} move={move} onClick={(i) => dispatch({ type: Actions.SelectMove, i })} ></TNav>
-          )}
           <Preload all />
         </React.Suspense>
         {MODE === 'development' && (
@@ -110,15 +104,30 @@ export function Game(_: GameProps) {
         <Toast message={`tie!`} />
       )}
       <div className="tttoe__actions">
-        <button className={'tttoe__btn' + (playerVsAi ? ' active' : '')} onClick={() => setMode(0)}>Play vs AI</button>
-        <button className={'tttoe__btn' + (aiVsAi ? ' active' : '')} onClick={() => setMode(1)}>AI vs AI</button>
-        <button className={'tttoe__btn' + (playerVsPlayer ? ' active' : '')} onClick={() => setMode(2)}>{getFindMatchLabel(rtmState, canMove)}</button>
+        {!playerVsPlayer && (
+          <>
+            <Button active={playerVsAi} onClick={() => setMode(0)} label="Play vs AI" />
+            <Button active={aiVsAi} onClick={() => setMode(1)} label="AI vs AI" />
+          </>
+        )}
+        <Button active={playerVsPlayer} onClick={() => onFindMatch(rtmState, dispatchRtm, setMode)} label={getFindMatchLabel(rtmState, canMove)} />
+        {playerVsPlayer && (
+          <Button onClick={() => onLeaveMatch(rtmState, dispatchRtm, setMode)} label="Leave Match" />
+        )}
       </div>
     </div>
   );
 }
 
 /*
+{false && (
+  <Environment path={'/assets/hdri/hdri-01/'} background={false} />
+)}
+<Board squares={state.boards[state.index].squares} victoryLine={state.victoryLine} onClick={i => onSelectSquare(state, dispatch, i, canMove)} />
+{false && playerVsAi && (
+  <TNav boards={state.boards} index={state.index} move={move} onClick={(i) => dispatch({ type: Actions.SelectMove, i })} ></TNav>
+)}
+
 <button className={'tttoe__btn' + (playerVsPlayer ? ' active' : '')} onClick={() => onFindMatch(rtmState, dispatchRtm)}>{getFindMatchLabel(rtmState, canMove)}</button>
 
 
@@ -153,11 +162,17 @@ function onSelectSquare(state: GameState | State, dispatch: Dispatch<GameAction>
   }
 }
 
-function onFindMatch(state: State, dispatch: Dispatch<Action>): void {
+function onFindMatch(state: State, dispatch: Dispatch<Action>, setMode: React.Dispatch<React.SetStateAction<number>>): void {
   if (state.status === Status.Connected ||
     (state.status === Status.Playing && state.winner)) {
+    setMode(2);
     dispatch({ type: Actions.FindMatch });
   }
+}
+
+function onLeaveMatch(state: State, dispatch: Dispatch<Action>, setMode: React.Dispatch<React.SetStateAction<number>>): void {
+  dispatch({ type: Actions.LeaveMatch });
+  setMode(0);
 }
 
 function getFindMatchLabel(state: State, canMove: boolean): string {

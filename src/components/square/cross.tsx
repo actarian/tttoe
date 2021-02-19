@@ -3,7 +3,6 @@ import { a, useSpring } from '@react-spring/three';
 import { meshBounds } from '@react-three/drei';
 import * as React from 'react';
 import { useMemo, useRef } from 'react';
-import { BufferGeometry } from 'three';
 import { CrossProps } from '../types';
 
 const DEG = Math.PI / 180;
@@ -21,7 +20,7 @@ export function Cross(props: CrossProps) {
   });
 
   const mesh = useRef<THREE.Object3D>();
-  const geometry = useMemo<BufferGeometry>(() => props.cross.geometry, []);
+  const geometry = useMemo<THREE.BufferGeometry>(() => props.cross.geometry, []);
 
   // <a.mesh ref={mesh} castShadow
   return (

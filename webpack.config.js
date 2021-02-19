@@ -74,7 +74,7 @@ const config = {
       '.js',
       '.css',
       '.scss',
-    ]
+    ],
   },
   devtool: false,
   devServer: {
@@ -128,6 +128,11 @@ function setPlugins(config) {
     */
     delete config.environment;
   }
+  let openAnalyzer = false;
+  if (config.openAnalyzer) {
+    openAnalyzer = true;
+    delete config.openAnalyzer;
+  }
   config.plugins = [
     new CleanWebpackPlugin(),
     new webpack.EnvironmentPlugin(environment),
@@ -159,12 +164,10 @@ function setPlugins(config) {
     new MiniCssExtractPlugin({
       filename: `[name].[contenthash].css`,
     }),
-    /*
     new BundleAnalyzerPlugin({
       analyzerMode: 'static',
-      openAnalyzer: false,
+      openAnalyzer: openAnalyzer,
     })
-    */
   ];
   return config;
 }

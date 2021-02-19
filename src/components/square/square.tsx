@@ -3,9 +3,6 @@ import { a, useSpring } from '@react-spring/three';
 import { meshBounds } from '@react-three/drei';
 import * as React from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import * as THREE from 'three';
-// import { useFrame } from 'react-three-fiber';
-import { BufferGeometry } from 'three';
 import { SquareProps } from '../types';
 import { Circle } from './circle';
 import { Cross } from './cross';
@@ -40,7 +37,7 @@ export function Square(props: SquareProps) {
   }, [props.value]);
 
   const mesh = useRef<THREE.Object3D>();
-  const geometry = useMemo<BufferGeometry>(() => props.square.geometry, []);
+  const geometry = useMemo<THREE.BufferGeometry>(() => props.square.geometry, []);
 
   const row = Math.floor(props.index / 3);
   const dy = 1 - row;
