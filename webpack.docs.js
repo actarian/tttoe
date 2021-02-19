@@ -8,8 +8,8 @@ const config = {
   },
   mode: 'production',
   output: {
-    path: path.resolve(__dirname, 'docs/tttoe-spring'),
-    publicPath: '/tttoe/tttoe-spring',
+    path: path.resolve(__dirname, 'docs/tttoe-reducer'),
+    publicPath: '/tttoe/tttoe-reducer',
     filename: '[name].[contenthash].js',
   },
   performance: {
