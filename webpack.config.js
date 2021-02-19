@@ -49,6 +49,7 @@ const config = {
           loader: "worker-loader",
           options: {
             filename: "[name].[contenthash].worker.js",
+            publicPath: "/",
           },
         },
       },
