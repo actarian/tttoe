@@ -13,21 +13,12 @@ export function Button(props: ButtonProps) {
     from: {
       opacity: 0,
       xys: [-45, 0, 1],
-      // transform: `perspective(600px) rotateX(-45deg)`,
     },
     to: {
       opacity: 1,
       xys: [0, 0, 1],
-      // transform: `perspective(600px) rotateX(0)`,
     },
     config: { mass: 4, tension: 400, friction: 30 },
-    /*
-    onRest: () => {
-      if (!squares) {
-        setSquares(true);
-      }
-    },
-    */
   }) as any);
 
   return (

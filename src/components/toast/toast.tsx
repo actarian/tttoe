@@ -14,14 +14,6 @@ export function Toast(props: ToastProps) {
       opacity: 1,
       transform: `perspective(600px) rotateY(0deg)`,
     },
-    /*
-    onRest: () => {
-      if (clicked) {
-        setClicked(false);
-        console.log('rest')
-      }
-    },
-    */
   });
   return (
     <animated.div style={style} className="tttoe__toast">
