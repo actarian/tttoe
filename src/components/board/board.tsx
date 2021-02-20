@@ -40,7 +40,7 @@ export function Board(props: BoardProps) {
   }
 
   // Loads model, uses CDN draco when needed
-  const { nodes, materials } = useGLTF('/assets/models/tttoe-scaled.glb', true);
+  const { nodes, materials } = useGLTF('./assets/models/tttoe-scaled.glb', true);
   // board, square, circle, cross
   const white = useMatcapTexture(MATCAP_WHITE)[0];
   const black = useMatcapTexture(MATCAP_BLACK)[0];

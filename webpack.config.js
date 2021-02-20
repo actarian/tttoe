@@ -15,9 +15,20 @@ const config = {
     path: path.resolve(__dirname, 'dist'),
     publicPath: '',
     filename: '[name].[contenthash].js',
+    pathinfo: true,
   },
   module: {
     rules: [
+      {
+        test: /\.worker\.(js|ts|tsx)$/,
+        use: {
+          loader: "worker-loader",
+          options: {
+            filename: "[name].[contenthash].worker.js",
+            publicPath: '/workers/'
+          },
+        },
+      },
       {
         test: /\.(ts|tsx)$/,
         enforce: 'pre',
@@ -42,15 +53,6 @@ const config = {
             loader: 'sass-loader',
           }
         ]
-      },
-      {
-        test: /\.worker\.(js|ts|tsx)$/,
-        use: {
-          loader: "worker-loader",
-          options: {
-            filename: "[name].[contenthash].worker.js",
-          },
-        },
       },
       {
         test: /\.(png|jpg|jpeg|gif|svg|ttf|woff|woff2|glb|gltf)$/i,
@@ -78,28 +80,22 @@ const config = {
   },
   devtool: false,
   devServer: {
-    port: 9000,
+    compress: true,
+    contentBase: [path.join(__dirname, 'assets')],
+    contentBasePublicPath: ['/'],
+    historyApiFallback: true,
+    host: '0.0.0.0',
+    hot: true,
+    https: false,
+    noInfo: false,
     open: true,
+    openPage: '',
+    overlay: true,
+    port: 9000,
     // proxy: { '/api': 'http://localhost:3000' },
-    // proxy URLs to backend development server
-    contentBase: [
-      path.join(__dirname, 'public'), // boolean | string | array, static file location
-      path.join(__dirname, 'assets'),
-    ],
-    // publicPath: '/assets/',
-    /*
-    staticOptions: {
-      redirect: false,
-    },
-    writeToDisk: true,
-    */
-    // contentBase: path.join(__dirname, 'public'),
-    compress: true, // enable gzip compression
-    historyApiFallback: true, // true for index.html upon 404, object for multiple paths
-    hot: true, // hot module replacement. Depends on HotModuleReplacementPlugin
-    https: false, // true for self-signed, object for cert authority
-    noInfo: true, // only errors & warns on hot reload
-    // ...
+    publicPath: '/',
+    useLocalIp: true,
+    writeToDisk: false,
   },
   /*
   optimization: {
@@ -133,6 +129,22 @@ function setPlugins(config) {
     openAnalyzer = true;
     delete config.openAnalyzer;
   }
+  let html = {
+    template: './src/index.html',
+    filename: 'index.html',
+    title: 'Webpack',
+    description: 'Webpack',
+    /*
+    'meta': {
+      'viewport': 'width=device-width, initial-scale=1.0',
+      'charset': 'UTF-8'
+    }
+    */
+  };
+  if (config.html) {
+    html = Object.assign(html, config.html);
+    delete config.html;
+  }
   config.plugins = [
     new CleanWebpackPlugin(),
     new webpack.EnvironmentPlugin(environment),
@@ -146,17 +158,7 @@ function setPlugins(config) {
       patterns: [{ from: 'src/index.html' }],
     }),
     */
-    new HtmlWebpackPlugin({
-      title: 'TTToe',
-      template: './src/index.html',
-      filename: 'index.html',
-      /*
-      'meta': {
-        'viewport': 'width=device-width, initial-scale=1.0',
-        'charset': 'UTF-8'
-      }
-      */
-    }),
+    new HtmlWebpackPlugin(html),
     new webpack.SourceMapDevToolPlugin({
       filename: `[name].[contenthash].[ext].map`
     }),
@@ -164,11 +166,16 @@ function setPlugins(config) {
     new MiniCssExtractPlugin({
       filename: `[name].[contenthash].css`,
     }),
-    new BundleAnalyzerPlugin({
-      analyzerMode: 'static',
-      openAnalyzer: openAnalyzer,
-    })
   ];
+  if (config.analyzer) {
+    delete config.analyzer;
+    config.plugins.push(
+      new BundleAnalyzerPlugin({
+        analyzerMode: 'static',
+        openAnalyzer: openAnalyzer,
+      })
+    );
+  }
   return config;
 }
 
