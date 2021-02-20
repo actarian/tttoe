@@ -19,6 +19,11 @@ $margin: 0.02;
     user-select: none;
   }
 
+  span {
+    display: block;
+    line-height: 0;
+  }
+
   &.victory {
     background: yellow;
   }
