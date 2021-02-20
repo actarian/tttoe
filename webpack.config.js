@@ -19,6 +19,16 @@ const config = {
   module: {
     rules: [
       {
+        test: /\.worker\.(js|ts|tsx)$/,
+        use: {
+          loader: "worker-loader",
+          options: {
+            filename: "[name].[contenthash].worker.js",
+            publicPath: '/workers/'
+          },
+        },
+      },
+      {
         test: /\.(ts|tsx)$/,
         enforce: 'pre',
         use: ['ts-loader', 'source-map-loader'],
@@ -42,16 +52,6 @@ const config = {
             loader: 'sass-loader',
           }
         ]
-      },
-      {
-        test: /\.worker\.(js|ts|tsx)$/,
-        use: {
-          loader: "worker-loader",
-          options: {
-            filename: "[name].[contenthash].worker.js",
-            publicPath: "/",
-          },
-        },
       },
       {
         test: /\.(png|jpg|jpeg|gif|svg|ttf|woff|woff2|glb|gltf)$/i,
@@ -134,6 +134,22 @@ function setPlugins(config) {
     openAnalyzer = true;
     delete config.openAnalyzer;
   }
+  let html = {
+    template: './src/index.html',
+    filename: 'index.html',
+    title: 'Webpack',
+    description: 'Webpack',
+    /*
+    'meta': {
+      'viewport': 'width=device-width, initial-scale=1.0',
+      'charset': 'UTF-8'
+    }
+    */
+  };
+  if (config.html) {
+    html = Object.assign(html, config.html);
+    delete config.html;
+  }
   config.plugins = [
     new CleanWebpackPlugin(),
     new webpack.EnvironmentPlugin(environment),
@@ -147,17 +163,7 @@ function setPlugins(config) {
       patterns: [{ from: 'src/index.html' }],
     }),
     */
-    new HtmlWebpackPlugin({
-      title: 'TTToe',
-      template: './src/index.html',
-      filename: 'index.html',
-      /*
-      'meta': {
-        'viewport': 'width=device-width, initial-scale=1.0',
-        'charset': 'UTF-8'
-      }
-      */
-    }),
+    new HtmlWebpackPlugin(html),
     new webpack.SourceMapDevToolPlugin({
       filename: `[name].[contenthash].[ext].map`
     }),

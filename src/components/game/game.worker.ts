@@ -4,7 +4,7 @@ const ctx: Worker = self as any;
 
 import { GameAi } from './game.ai';
 
-// console.log('game.worker.ts', ctx);
+console.log('game.worker.ts', ctx);
 
 ctx.addEventListener('message', (event) => {
   // console.log('game.worker.ts', event);

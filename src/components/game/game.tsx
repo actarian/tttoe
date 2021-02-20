@@ -24,6 +24,7 @@ export function Game(_: GameProps) {
 
   const [postMessage] = useWorker(async () => {
     const GameWorker = await import('./game.worker') as WebpackWorkerFactory;
+    // console.log(GameWorker);
     return new GameWorker.default();
   }, (event: any) => {
     onSelectSquare(state, dispatch, event.data.bestMove, true);
