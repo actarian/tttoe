@@ -15,6 +15,7 @@ const config = {
     path: path.resolve(__dirname, 'dist'),
     publicPath: '',
     filename: '[name].[contenthash].js',
+    pathinfo: true,
   },
   module: {
     rules: [
@@ -79,28 +80,22 @@ const config = {
   },
   devtool: false,
   devServer: {
-    port: 9000,
+    compress: true,
+    contentBase: [path.join(__dirname, 'assets')],
+    contentBasePublicPath: ['/'],
+    historyApiFallback: true,
+    host: '0.0.0.0',
+    hot: true,
+    https: false,
+    noInfo: false,
     open: true,
+    openPage: '',
+    overlay: true,
+    port: 9000,
     // proxy: { '/api': 'http://localhost:3000' },
-    // proxy URLs to backend development server
-    contentBase: [
-      path.join(__dirname, 'public'), // boolean | string | array, static file location
-      path.join(__dirname, 'assets'),
-    ],
-    // publicPath: '/assets/',
-    /*
-    staticOptions: {
-      redirect: false,
-    },
-    writeToDisk: true,
-    */
-    // contentBase: path.join(__dirname, 'public'),
-    compress: true, // enable gzip compression
-    historyApiFallback: true, // true for index.html upon 404, object for multiple paths
-    hot: true, // hot module replacement. Depends on HotModuleReplacementPlugin
-    https: false, // true for self-signed, object for cert authority
-    noInfo: true, // only errors & warns on hot reload
-    // ...
+    publicPath: '/',
+    useLocalIp: true,
+    writeToDisk: false,
   },
   /*
   optimization: {
@@ -171,11 +166,16 @@ function setPlugins(config) {
     new MiniCssExtractPlugin({
       filename: `[name].[contenthash].css`,
     }),
-    new BundleAnalyzerPlugin({
-      analyzerMode: 'static',
-      openAnalyzer: openAnalyzer,
-    })
   ];
+  if (config.analyzer) {
+    delete config.analyzer;
+    config.plugins.push(
+      new BundleAnalyzerPlugin({
+        analyzerMode: 'static',
+        openAnalyzer: openAnalyzer,
+      })
+    );
+  }
   return config;
 }
 
