@@ -9,8 +9,16 @@ const config = {
   mode: 'production',
   output: {
     path: path.resolve(__dirname, 'docs/tttoe-spring'),
-    publicPath: '/tttoe/tttoe-spring',
+    publicPath: '/tttoe/tttoe-spring/',
     filename: '[name].[contenthash].js',
+  },
+  html: {
+    template: './src/index.html',
+    filename: 'index.html',
+    title: 'TTToe',
+    description: 'TTToe',
+    image: 'https://avatars.githubusercontent.com/u/1841442?s=460&u=9d963e264cc39206782c9e0dbfdbdb0c6d25b477&v=4',
+    url: 'https://actarian.github.io/tttoe/tttoe-spring',
   },
   performance: {
     hints: 'warning', // enum
