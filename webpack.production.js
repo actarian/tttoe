@@ -29,6 +29,7 @@ const config = {
     }
   },
   analyzer: true,
+  openAnalyzer: true,
 };
 
 module.exports = config;

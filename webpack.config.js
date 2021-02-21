@@ -67,6 +67,10 @@ const config = {
           },
         ],
       },
+      {
+        test: /react-spring/,
+        sideEffects: true,
+      },
     ]
   },
   resolve: {

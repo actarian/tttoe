@@ -29,7 +29,16 @@ const config = {
       return assetFilename.endsWith('.css') || assetFilename.endsWith('.js');
     }
   },
-  openAnalyzer: true,
+  /*
+  devServer: {
+    contentBase: [path.join(__dirname, 'assets')],
+    contentBasePublicPath: ['/tttoe/tttoe-r3f/'],
+    host: '0.0.0.0',
+    openPage: 'tttoe/tttoe-r3f',
+    port: 9000,
+    publicPath: '/tttoe/tttoe-r3f/',
+  },
+  */
 };
 
 module.exports = config;
