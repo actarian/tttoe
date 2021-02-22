@@ -67,7 +67,7 @@ export function Game(_: GameProps) {
 // pure
 
 function onSelectSquare(state: GameState, dispatch: Dispatch<GameAction> | Dispatch<Action>, i: number, canMove: boolean) {
-  if (canMove && !state.winner && state.boards[state.index].squares[i] == null) {
+  if (canMove && !(state.winner || state.tie) && state.boards[state.index].squares[i] == null) {
     dispatch({ type: Actions.SelectSquare, i });
   }
 }
