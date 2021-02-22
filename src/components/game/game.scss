@@ -160,9 +160,10 @@
 
 .tttoe__actions {
   position: absolute;
-  bottom: 30px;
   display: flex;
   justify-content: center;
+  bottom: 30px;
+  padding: 0 15px;
 
   .tttoe__btn {
     margin: 0 5px;
