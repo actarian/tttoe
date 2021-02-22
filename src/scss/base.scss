@@ -3,7 +3,8 @@ html, body, #app {
 }
 
 body {
-  width: 100vw;
+  position: fixed;
+  width: 100%;
   height: 100vh;
   padding: 0;
   margin: 0;
