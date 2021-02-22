@@ -23,4 +23,9 @@ $padding: 0.02;
     height: $width * 100vw;
     padding: $padding * 100vw;
   }
+
+  @media (max-width: 560px) {
+    width: calc(100vw - 60px);
+    height: calc(100vw - 60px);
+  }
 }
