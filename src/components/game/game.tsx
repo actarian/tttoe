@@ -75,7 +75,7 @@ export function Game(_: GameProps) {
 // pure
 
 function onSelectSquare(state: GameState | State, dispatch: Dispatch<GameAction> | Dispatch<Action>, i: number, canMove: boolean) {
-  if (canMove && !state.winner && state.boards[state.index].squares[i] == null) {
+  if (canMove && !(state.winner || state.tie) && state.boards[state.index].squares[i] == null) {
     // console.log('onSelectSquare', i);
     dispatch({ type: Actions.SelectSquare, i });
   }
@@ -83,7 +83,7 @@ function onSelectSquare(state: GameState | State, dispatch: Dispatch<GameAction>
 
 function onFindMatch(state: State, dispatch: Dispatch<Action>, setMode: React.Dispatch<React.SetStateAction<number>>): void {
   if (state.status === Status.Connected ||
-    (state.status === Status.Playing && state.winner)) {
+    (state.status === Status.Playing && (state.winner || state.tie))) {
     setMode(2);
     dispatch({ type: Actions.FindMatch });
   }
@@ -99,7 +99,7 @@ function getFindMatchLabel(state: State, canMove: boolean): string {
     case Status.Waiting:
       return 'Waiting Buddy';
     case Status.Playing:
-      if (state.winner) {
+      if (state.winner || state.tie) {
         return 'Play Again';
       } else if (canMove) {
         return 'Your Turn';
