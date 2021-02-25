@@ -1,0 +1,46 @@
+.tttoe__leaderboard {
+	position: fixed;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	top: -20vw;
+  left: -20vw;
+  width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.4);
+  border: 20vw solid transparent;
+  box-sizing: content-box;
+	pointer-events: none;
+
+	animation: leaderboard-enter 0.4s cubic-bezier(0.175, 0.885, 0.320, 1.275) both;
+}
+
+.tttoe__modal {
+	padding: 30px;
+	border-radius: 15px;
+	background: white;
+	box-shadow: 0 20px 30px -5px rgba(0, 0, 0, 0.3);
+	pointer-events: auto;
+}
+
+.tttoe__form {
+	display: flex;
+	flex-direction: column;
+
+  .tttoe__btn {
+    margin-top: 30px;
+  }
+}
+
+@keyframes leaderboard-enter {
+	0% {
+		transform: scale(1.2);
+    opacity: 0;
+	}
+
+	100% {
+		transform: scale(1);
+    opacity: 1;
+	}
+}

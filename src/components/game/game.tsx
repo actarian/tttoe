@@ -54,6 +54,7 @@ export function Game(_: GameProps) {
       <div className="tttoe__actions">
           <ButtonLink exact={true} to="/play-vs-ai" label="Play vs AI" />
           <ButtonLink exact={true} to="/ai-vs-ai" label="AI vs AI" />
+          <ButtonLink exact={true} to="/leaderboard" label="Leaderboard" />
       </div>
     </div>
   );

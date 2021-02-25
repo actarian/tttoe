@@ -70,3 +70,6 @@ export type ButtonLinkProps = {
 
 export type GameProps = {
 }
+
+export type LeaderboardProps = {
+}
