@@ -1,11 +1,27 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
+import { HashRouter as Router, Redirect, Route } from 'react-router-dom';
 import { Game } from './components/game/game';
 import './styles.scss';
-// console.log(document);
+
 const mountNode = document.getElementById('app');
 ReactDOM.render(
   <React.StrictMode>
-    <Game />
+    <Router>
+      <Route path="/">
+        <Game />
+        <Route path="play-vs-ai" />
+        <Route path="ai-vs-ai" />
+        <Route path="/" render={() => <Redirect to="/play-vs-ai" />} />
+      </Route>
+    </Router>
   </React.StrictMode>, mountNode
 );
+
+/*
+<Route path="/" component={Game}>
+  <Route path="play-vs-ai" component={Calendar} />
+  <Route path="ai-vs-ai" component={Calendar} />
+  <Route path="match/:player/vs/:opponent" components={{ calendar: Calendar }} />
+</Route>
+*/

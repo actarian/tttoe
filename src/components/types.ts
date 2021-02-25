@@ -62,5 +62,11 @@ export type ButtonProps = {
   active?: boolean;
 }
 
+export type ButtonLinkProps = {
+  exact: boolean;
+  label: string;
+  to: string;
+}
+
 export type GameProps = {
 }

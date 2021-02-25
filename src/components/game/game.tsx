@@ -1,11 +1,11 @@
 import * as React from 'react';
-import { Dispatch, useState } from 'react';
+import { Dispatch } from 'react';
+import { useRouteMatch } from 'react-router-dom';
 import { WebpackWorkerFactory } from 'worker-loader!*';
 import { useTimeout } from '../@hooks/timeout/timeout';
 import { useWorker } from '../@hooks/worker/worker';
 import { Board } from '../board/board';
-import { Button } from '../button/button';
-import { Nav } from '../nav/nav';
+import { ButtonLink } from '../button-link/button-link';
 import { Toast } from '../toast/toast';
 import { Action, Actions, GameAction, GameProps, GameState } from '../types';
 import './game.scss';
@@ -13,12 +13,16 @@ import { useStore } from './game.service';
 
 export function Game(_: GameProps) {
 
-  const [mode, setMode] = useState(0);
+  const playVsAi = useRouteMatch('/play-vs-ai');
+  const aiVsAi = useRouteMatch('/ai-vs-ai');
+
+  // const match = useRouteMatch();
+  // const params = useParams();
+  // const location = useLocation();
+  // console.log('Game', match, params, location, playVsAi);
+
   const [state, dispatch] = useStore();
 
-  const playerVsAi = mode === 0;
-  const aiVsAi = mode === 1;
-  const playerVsPlayer = mode === 2;
   const move = (state.index % 2) === 0 ? 'X' : 'O';
   const canMove = aiVsAi ? false : move === 'X';
 
@@ -31,21 +35,16 @@ export function Game(_: GameProps) {
   });
 
   useTimeout(() => {
-    if (playerVsAi || aiVsAi) {
-      if (state.winner || state.tie) {
-        dispatch({ type: Actions.SelectMove, i: 0 });
-      } else if (move !== 'X' || aiVsAi) {
-        postMessage({ board: state.boards[state.index].squares, player: move, opponent: (move === 'X' ? 'O' : 'X') });
-      }
+    if (state.winner || state.tie) {
+      dispatch({ type: Actions.SelectMove, i: 0 });
+    } else if (move !== 'X' || aiVsAi) {
+      postMessage({ board: state.boards[state.index].squares, player: move, opponent: (move === 'X' ? 'O' : 'X') });
     }
-  }, [playerVsAi, aiVsAi, move]);
+  }, [move, aiVsAi]); // playVsAi, aiVsAi, move
 
   return (
     <div className="tttoe__game">
       <Board squares={state.boards[state.index].squares} victoryLine={state.victoryLine} onClick={i => onSelectSquare(state, dispatch, i, canMove)} />
-      {false && playerVsAi && (
-        <Nav boards={state.boards} index={state.index} move={move} onClick={(i) => dispatch({ type: Actions.SelectMove, i })} />
-      )}
       {state.winner && (
         <Toast message={`${state.winner} wins!`} />
       )}
@@ -53,12 +52,8 @@ export function Game(_: GameProps) {
         <Toast message={`tie!`} />
       )}
       <div className="tttoe__actions">
-        {!playerVsPlayer && (
-          <>
-            <Button active={playerVsAi} onClick={() => setMode(0)} label="Play vs AI" />
-            <Button active={aiVsAi} onClick={() => setMode(1)} label="AI vs AI" />
-          </>
-        )}
+          <ButtonLink exact={true} to="/play-vs-ai" label="Play vs AI" />
+          <ButtonLink exact={true} to="/ai-vs-ai" label="AI vs AI" />
       </div>
     </div>
   );
