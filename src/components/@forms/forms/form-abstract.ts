@@ -17,7 +17,7 @@ export abstract class FormAbstract {
 	}
 
 	name?: string;
-	value_: any = undefined;
+	value_: any = null;
 	submitted_: boolean = false;
 	touched_: boolean = false;
 	dirty_: boolean = false;
@@ -82,7 +82,7 @@ export abstract class FormAbstract {
 	 * @return an object with key, value errors
 	 */
 	validate$(value: any): Observable<{ [key: string]: any }> {
-    if (this.status === FormStatus.Disabled || this.status === FormStatus.Hidden || this.submitted_ || !this.validators.length) {
+    if (this.status === FormStatus.Disabled || this.status === FormStatus.Readonly || this.status === FormStatus.Hidden || this.submitted_ || !this.validators.length) {
 			this.errors_ = {};
 			if (this.status === FormStatus.Invalid) {
 				this.status = FormStatus.Valid;

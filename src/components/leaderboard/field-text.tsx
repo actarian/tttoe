@@ -23,21 +23,33 @@ export function FieldText(props: FieldTextProps) {
     // props.control.value = event.target.value;
   }
 
+  const [focus, setFocus] = React.useState(false);
+
   const onDidBlur = (_: React.FocusEvent<HTMLInputElement>) => {
     setTouched();
+    setFocus(false);
+  }
+
+  const onDidFocus = (_: React.FocusEvent<HTMLInputElement>) => {
+    setFocus(true);
   }
 
   return (
-    <div className={className('tttoe__field', control.flags)}>
-      <div className="tttoe__field__head"></div>
-      <div className="tttoe__field__control">
-        <input placeholder={props.name} value={control.value || ''} onChange={onDidChange} onBlur={onDidBlur} disabled={control.flags.disabled} readOnly={control.flags.readonly} />
+    control.flags.hidden ? (
+      <input type="hidden" value={control.value || ''} />
+    ) : (
+      <div className={className('tttoe__field', control.flags, { value: control.value != null && control.value != '', focus })}>
+        <div className="tttoe__field__head"></div>
+        <div className="tttoe__field__control">
+          <input placeholder={props.name} value={control.value || ''} onChange={onDidChange} onBlur={onDidBlur} onFocus={onDidFocus} disabled={control.flags.disabled} readOnly={control.flags.readonly} />
+          <div className="tttoe__field__label">{props.name}</div>
+          {control.flags.touched && control.errors.map(error => (
+            <div key={error.key} className="tttoe__error">{error.key}</div>
+          ))}
+        </div>
+        <div className="tttoe__field__head"></div>
       </div>
-      {control.flags.touched && control.errors.map(error => (
-        <div key={error.key} className="tttoe__error">{error.key}</div>
-      ))}
-      <div className="tttoe__field__head"></div>
-    </div>
+    )
   );
 }
 

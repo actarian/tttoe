@@ -6,6 +6,9 @@
   "keywords": [],
   "author": "Luca Zampetti",
   "license": "MIT",
+  "repository": {
+    "url": "https://github.com/actarian/tttoe"
+  },
   "scripts": {
     "start": "webpack serve --env=development",
     "build": "webpack --env=production",

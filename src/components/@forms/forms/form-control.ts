@@ -1,5 +1,5 @@
 import { FormAbstract } from './form-abstract';
-import { FormStatus } from './types';
+import { FormOptions, FormStatus } from './types';
 import { FormValidator } from './validators/form-validator';
 
 /**
@@ -18,13 +18,15 @@ export class FormControl extends FormAbstract {
    * @param value The value of the control.
    * @param validators a list of validators.
    */
-  constructor(value: any = null, validators?: FormValidator | FormValidator[], options?: { disabled?: boolean, readonly?: boolean }) {
+  constructor(value: any = null, validators?: FormValidator | FormValidator[], options?: FormOptions) {
     super(validators);
     this.value_ = value;
     if (options?.disabled) {
       this.status = FormStatus.Disabled;
     } else if (options?.readonly) {
       this.status = FormStatus.Readonly;
+    } else if (options?.hidden) {
+      this.status = FormStatus.Hidden;
     } else {
       this.status = FormStatus.Pending;
     }
@@ -32,7 +34,6 @@ export class FormControl extends FormAbstract {
     this.initSubjects_();
     this.initObservables_();
     this.statusSubject.next(null);
-    console.log(this.status, this.value_);
   }
 
 }

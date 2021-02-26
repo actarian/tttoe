@@ -65,7 +65,7 @@ export class FormAbstractCollection extends FormAbstract {
 
 	validate(value: any): any[] {
 		let errors;
-		if (this.status === FormStatus.Disabled || this.status === FormStatus.Hidden) {
+		if (this.status === FormStatus.Disabled || this.status === FormStatus.Readonly || this.status === FormStatus.Hidden) {
 			// this.errors = {};
 			errors = [];
 		} else {

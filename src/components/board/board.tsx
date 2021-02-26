@@ -6,13 +6,13 @@ import { Square } from '../square/square';
 import { BoardProps } from '../types';
 import './board.scss';
 
-const calc = (x:number, y:number) => [(y - window.innerHeight / 2) / 50, -(x - window.innerWidth / 2) / 50, 1.05]
-const trans:any = (x:number, y:number, s:number) => `perspective(600px) rotateX(${x}deg) rotateY(${y}deg) scale(${s})`;
+const calc = (x: number, y: number) => [(y - window.innerHeight / 2) / 50, -(x - window.innerWidth / 2) / 50, 1.05]
+const trans: any = (x: number, y: number, s: number) => `perspective(600px) rotateX(${x}deg) rotateY(${y}deg) scale(${s})`;
 
 export function Board(props: BoardProps) {
 
   const [squares, setSquares] = useState(false);
-  const [style, set] = useSpring(():AnimatedValue<{ opacity: number, xys: number[] }> => ({
+  const [style, set] = useSpring((): AnimatedValue<{ opacity: number, xys: number[] }> => ({
     from: {
       opacity: 0,
       xys: [-45, 0, 1],

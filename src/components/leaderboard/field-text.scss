@@ -1,35 +1,92 @@
 .tttoe__field {
 	display: flex;
 	flex-direction: column;
-	padding: 10px 0;
+  min-width: 355px;
+	padding: 15px 0;
 
 	&.valid {
 		.tttoe__field__control {
 			border-color: green;
 		}
+    .tttoe__field__label {
+      color: green;
+    }
 	}
 
 	&.invalid {
 		.tttoe__field__control {
-			border-color: red;
+			border-color: #c00000;
 		}
+    .tttoe__field__label {
+      color: #c00000;
+    }
 	}
+
+	&.disabled {
+		.tttoe__field__control {
+			border-color: #888;
+      background: #eee;
+      color: #666;
+		}
+    .tttoe__field__label {
+      background: #eee;
+      color: #888;
+    }
+	}
+
+	&.readonly {
+		.tttoe__field__control {
+			border-color: #888;
+      color: #666;
+		}
+    .tttoe__field__label {
+      color: #888;
+    }
+	}
+
+  &.value,
+  &.focus {
+    .tttoe__field__label {
+      top: 0;
+      left: 4px;
+      transform: translateY(-50%) scale(0.7);
+      transform-origin: left;
+    }
+  }
 }
 
 .tttoe__field__control {
+  position: relative;
 	display: flex;
-	padding: 4px 8px;
+	padding: 8px 8px;
 	border: 2px solid grey;
-	border-radius: 3px;
+	border-radius: 7px;
+}
+
+.tttoe__field__label {
+  position: absolute;
+  top: 50%;
+  left: 4px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  background: white;
+  text-transform: uppercase;
+  transform: translateY(-50%);
+  transition: all ease-out 150ms;
+  pointer-events: none;
 }
 
 .tttoe__error {
+  position: absolute;
+  left: 5px;
+  bottom: -10px;
 	padding: 4px;
 	margin-top: 2px;
 	border-radius: 3px;
 	font-size: 11px;
 	font-weight: 300;
 	text-transform: uppercase;
-	background: #ffacac;
+	// background: #ffacac;
+	background: #fff;
 	color: #c00000;
 }

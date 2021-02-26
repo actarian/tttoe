@@ -11,8 +11,7 @@
 	background: rgba(0, 0, 0, 0.4);
   border: 20vw solid transparent;
   box-sizing: content-box;
-	pointer-events: none;
-
+	pointer-events: auto;
 	animation: leaderboard-enter 0.4s cubic-bezier(0.175, 0.885, 0.320, 1.275) both;
 }
 
@@ -22,6 +21,11 @@
 	background: white;
 	box-shadow: 0 20px 30px -5px rgba(0, 0, 0, 0.3);
 	pointer-events: auto;
+}
+
+.tttoe__title {
+  font-size: 23px;
+  margin-bottom: 5px;
 }
 
 .tttoe__form {
